@@ -2,10 +2,6 @@
   Crafting Interpreters
   https://craftinginterpreters.com/
 }
-{
-  Crafting Interpreters
-  https://craftinginterpreters.com/
-}
 
 unit scanner;
 
@@ -22,8 +18,6 @@ uses
 
 type
 
-  TOnScannerError = procedure(line: integer; msg: string) of object;
-
   TScanner = class
   private
     FSource: string;
@@ -31,41 +25,40 @@ type
     FStart: integer;
     FCurrent: integer;
     FLine: integer;
-    FOnError: TOnScannerError;
 
     procedure ScanToken;
     procedure AddToken(tokenKind: TTokenKind); overload;
     procedure AddToken(tokenKind: TTokenKind; literal: variant); overload;
-    procedure Error(line: integer; msg: string);
 
     function IsAtEnd: boolean;
     function Advance: char;
     function Match(expected: char): boolean;
     function Peek: char;
+    function PeekNext: char;
 
     procedure ReadString;
     procedure ReadNumber;
     procedure ReadIdentifier;
 
     function IsDigit(c: char): boolean;
-    function PeekNext: char;
     function IsAlpha(c: char): boolean;
     function IsAlphaNumeric(c: char): boolean;
   public
     constructor Create(src: string);
     function ScanTokens: TObjectList<TToken>;
     destructor Destroy; override;
-    property OnError: TOnScannerError read FOnError write FOnError;
   end;
 
 implementation
+
+uses lox;
 
 constructor TScanner.Create(src: string);
 begin
   FTokens := TObjectList<TToken>.Create();
   FSource := src;
-  FStart := 1;
-  Fcurrent := 1;
+  FStart := Low(src);
+  Fcurrent := Low(src);
   FLine := 1;
 end;
 
@@ -77,7 +70,8 @@ end;
 
 function TScanner.IsAtEnd(): boolean;
 begin
-  Result := FCurrent > FSource.Length;
+  //Result := FCurrent > FSource.Length;
+  Result := FCurrent > High(FSource);
 end;
 
 function TScanner.Advance(): char;
@@ -148,7 +142,7 @@ begin
     '0'..'9': ReadNumber();
     'a'..'z', 'A'..'Z', '_': ReadIdentifier();
     else
-      Error(FLine, 'Unexpected character.');
+      TLox.Error(FLine, 'Unexpected character.');
   end;
 
 end;
@@ -220,7 +214,7 @@ begin
 
   if (isAtEnd()) then
   begin
-    Error(FLine, 'Unterminated string.');
+    TLox.Error(FLine, 'Unterminated string.');
     Exit();
   end;
 
@@ -251,12 +245,6 @@ begin
 
   Inc(FCurrent);
   Result := True;
-end;
-
-procedure TScanner.Error(line: integer; msg: string);
-begin
-  if Assigned(FOnError) then
-    FOnError(Line, Msg);
 end;
 
 function TScanner.ScanTokens: TObjectList<TToken>;

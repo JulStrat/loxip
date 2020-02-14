@@ -159,6 +159,17 @@ begin
   end;
   scn.Destroy;
 
+  WriteLn('***');
+  scn := TScanner.Create(
+    ''
+    );
+  for t in scn.ScanTokens() do
+  begin
+    WriteLn(t.ToString());
+  end;
+  scn.Destroy;
+
+
   ReadLn;
 end.
 

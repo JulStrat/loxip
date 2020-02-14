@@ -11,7 +11,7 @@
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="t_scanner"/>
+      <Title Value="loxip"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -22,18 +22,16 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="t_scanner"/>
+            <Filename Value="loxip"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..;..\..\generics.collections\src"/>
+            <OtherUnitFiles Value="..\generics.collections\src"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
             <SyntaxOptions>
-              <SyntaxMode Value="Delphi"/>
               <IncludeAssertionCode Value="True"/>
-              <UseAnsiStrings Value="False"/>
             </SyntaxOptions>
           </Parsing>
           <CodeGeneration>
@@ -60,11 +58,11 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="t_scanner"/>
+            <Filename Value="loxip"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..;..\..\generics.collections\src"/>
+            <OtherUnitFiles Value="..\generics.collections\src"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -92,24 +90,24 @@
     </RunParams>
     <Units Count="5">
       <Unit0>
-        <Filename Value="t_scanner.lpr"/>
+        <Filename Value="loxip.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="..\token.pas"/>
+        <Filename Value="lox.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit1>
       <Unit2>
-        <Filename Value="..\..\generics.collections\src\generics.collections.pas"/>
+        <Filename Value="token.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Generics.Collections"/>
       </Unit2>
       <Unit3>
-        <Filename Value="..\scanner.pas"/>
+        <Filename Value="..\generics.collections\src\generics.collections.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Generics.Collections"/>
       </Unit3>
       <Unit4>
-        <Filename Value="..\lox.pas"/>
+        <Filename Value="scanner.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
     </Units>
@@ -118,18 +116,13 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="t_scanner"/>
+      <Filename Value="loxip"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..;..\..\generics.collections\src"/>
+      <OtherUnitFiles Value="..\generics.collections\src"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
-    <Parsing>
-      <SyntaxOptions>
-        <SyntaxMode Value="Delphi"/>
-      </SyntaxOptions>
-    </Parsing>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
