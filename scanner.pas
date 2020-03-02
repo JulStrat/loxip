@@ -224,16 +224,18 @@ end;
 
 function TScanner.Peek(): char;
 begin
-  if (isAtEnd()) then
-    Exit(#0);
-  Result := FSource[FCurrent];
+  if isAtEnd() then
+    Result := #0
+  else
+    Result := FSource[FCurrent];
 end;
 
 function TScanner.PeekNext(): char;
 begin
-  if (FCurrent + 1) > FSource.Length then
-    Exit(#0);
-  Result := FSource[FCurrent + 1];
+  if (FCurrent + 1) > High(FSource) then
+    Result := #0
+  else
+    Result := FSource[FCurrent + 1];
 end;
 
 function TScanner.Match(expected: char): boolean;
