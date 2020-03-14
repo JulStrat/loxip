@@ -14,7 +14,7 @@ interface
 uses
   token,
   Generics.Collections,
-  SysUtils;
+  Classes, SysUtils;
 
 type
 
@@ -89,7 +89,7 @@ procedure TScanner.AddToken(tokenKind: TTokenKind; literal: variant);
 var
   txt: string;
 begin
-  txt := Copy(FSource, FStart, FCurrent - FStart);
+  txt := System.Copy(FSource, FStart, FCurrent - FStart);
   FTokens.Add(TToken.Create(tokenKind, txt, literal, FLine));
 end;
 
@@ -155,7 +155,7 @@ begin
   while (IsAlphaNumeric(Peek())) do
     Advance();
 
-  txt := Copy(FSource, FStart, FCurrent - FStart);
+  txt := System.Copy(FSource, FStart, FCurrent - FStart);
   if not loxKeywords.TryGetValue(txt, tk) then
     tk := TTokenKind.tkIDENTIFIER;
 
