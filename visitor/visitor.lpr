@@ -10,22 +10,20 @@ type
 TExpressionVisitor = class;
 
 TExpression = class abstract
-  procedure Accept(ev: TExpressionVisitor); virtual; abstract;
+  function Accept(ev: TExpressionVisitor): String; virtual; abstract;
 end;
 
 TLiteralExpression = class(TExpression)
   FValue: variant;
   constructor Create(v: variant);
-  procedure Accept(ev: TExpressionVisitor); override;
-  function ToString(): String; override;
+  function Accept(ev: TExpressionVisitor): String; override;
 end;
 
 TUnaryExpression = class(TExpression)
   FOp: Char;
   FRight: TExpression;
   constructor Create(o: Char; r: TExpression);
-  procedure Accept(ev: TExpressionVisitor); override;
-  function ToString(): String; override;
+  function Accept(ev: TExpressionVisitor): String; override;
 end;
 
 TBinaryExpression = class(TExpression)
@@ -33,31 +31,24 @@ TBinaryExpression = class(TExpression)
   FLeft: TExpression;
   FRight: TExpression;
   constructor Create(o: Char; l, r: TExpression);
-  procedure Accept(ev: TExpressionVisitor); override;
-  function ToString(): String; override;
+  function Accept(ev: TExpressionVisitor): String; override;
 end;
 
 TExpressionVisitor = class
-  procedure Visit(exp: TExpression); virtual; overload;
-  procedure Visit(exp: TLiteralExpression); virtual; overload;
-  procedure Visit(exp: TUnaryExpression); virtual; overload;
-  procedure Visit(exp: TBinaryExpression); virtual; overload;
+  function Visit(exp: TExpression): String; virtual; overload;
+  function Visit(exp: TLiteralExpression): String; virtual; overload;
+  function Visit(exp: TUnaryExpression): String; virtual; overload;
+  function Visit(exp: TBinaryExpression): String; virtual; overload;
 end;
-
 
 constructor TLiteralExpression.Create(v: variant);
 begin
   self.FValue := v;
 end;
 
-procedure TLiteralExpression.Accept(ev: TExpressionVisitor);
+function TLiteralExpression.Accept(ev: TExpressionVisitor): String;
 begin
-  ev.Visit(self);
-end;
-
-function TLiteralExpression.ToString(): String;
-begin
-  Result := VarToStr(self.FValue);
+  Result := ev.Visit(self);
 end;
 
 constructor TUnaryExpression.Create(o: Char; r: TExpression);
@@ -66,14 +57,9 @@ begin
   self.FRight := r;
 end;
 
-procedure TUnaryExpression.Accept(ev: TExpressionVisitor);
+function TUnaryExpression.Accept(ev: TExpressionVisitor): String;
 begin
-  ev.Visit(self);
-end;
-
-function TUnaryExpression.ToString(): String;
-begin
-  Result := '(' + self.FOp + self.FRight.ToString + ')';
+  Result := ev.Visit(self);
 end;
 
 constructor TBinaryExpression.Create(o: Char; l, r: TExpression);
@@ -83,48 +69,43 @@ begin
   self.FRight := r;
 end;
 
-procedure TBinaryExpression.Accept(ev: TExpressionVisitor);
+function TBinaryExpression.Accept(ev: TExpressionVisitor): String;
 begin
-  ev.Visit(self);
-end;
-
-function TBinaryExpression.ToString(): String;
-begin
-  Result := '(' + self.FLeft.ToString + self.FOp + self.FRight.ToString + ')';
+  Result := ev.Visit(self);
 end;
 
 (* Visitor *)
-procedure TExpressionVisitor.Visit(exp: TExpression);
+function TExpressionVisitor.Visit(exp: TExpression): String;
 begin
-  exp.Accept(self);
+  Result := exp.Accept(self);
 end;
 
-procedure TExpressionVisitor.Visit(exp: TLiteralExpression);
+function TExpressionVisitor.Visit(exp: TLiteralExpression): String;
 begin
-  WriteLn(exp.ToString());
+  Result := VarToStr(exp.FValue);
 end;
 
-procedure TExpressionVisitor.Visit(exp: TUnaryExpression);
+function TExpressionVisitor.Visit(exp: TUnaryExpression): String;
 begin
-  WriteLn(exp.ToString());
+  Result := '(' + exp.FOp + '(' + Visit(exp.FRight) + ')' + ')';
 end;
 
-procedure TExpressionVisitor.Visit(exp: TBinaryExpression);
+function TExpressionVisitor.Visit(exp: TBinaryExpression): String;
 begin
-  WriteLn(exp.ToString());
+  Result := '(' + Visit(exp.FLeft) + exp.FOp + Visit(exp.FRight) + ')';
 end;
 
 var
   ev: TExpressionVisitor;
-
+  exp: TExpression;
 begin
   ev := TExpressionVisitor.Create;
-  ev.Visit(
-    TUnaryExpression('!',
+  exp := TUnaryExpression.Create('!',
     TBinaryExpression.Create('+',
     TBinaryExpression.Create('*', TLiteralExpression.Create(21), TLiteralExpression.Create(13)),
     TBinaryExpression.Create('/', TLiteralExpression.Create(1031), TLiteralExpression.Create(13)))
-    ));
+    );
+  WriteLn(ev.Visit(exp));
   ReadLn;
 end.
 
