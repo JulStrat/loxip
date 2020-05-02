@@ -15,6 +15,8 @@ begin
     script.LoadFromFile(ParamStr(1));
     source := script.Text;
     TLox.Run(source);
+    if TLox.hadError then
+      Halt(65);
   end
   else
     TLox.RunPrompt;

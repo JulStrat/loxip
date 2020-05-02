@@ -64,7 +64,7 @@ end;
 
 destructor TScanner.Destroy;
 begin
-  FTokens.Free();
+  //FTokens.Free();
   inherited;
 end;
 

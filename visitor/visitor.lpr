@@ -93,4 +93,5 @@ begin
   	 		 TLiteralExpression.Create(1031), 
   	 		 TLiteralExpression.Create(13)))); 
   	writeln (exp.accept(ev));
+  ReadLn;
 end. 
