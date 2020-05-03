@@ -7,6 +7,7 @@ unit expression;
 
 {$ifdef FPC}
 {$mode delphi}
+{$interfaces corba}
 {$endif}
 
 interface
@@ -78,6 +79,7 @@ type
   end;
 
   IExpressionVisitor = interface
+['{8A3D7767-D1C5-49F5-BC15-F6C975FBAC67}']
     function VisitLit(expr: TLiteralExpression): variant;
     function VisitUn(expr: TUnaryExpression): variant;
     function VisitBin(expr: TBinaryExpression): variant;

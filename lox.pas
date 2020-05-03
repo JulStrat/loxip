@@ -39,6 +39,7 @@ var
   parser: TParser;
   tokens: TObjectList<TToken>;
   printer: TASTPrinter;
+  dotmaker: TASTDOTMaker;
   tok: TToken;
   expr: TExpression;
 begin
@@ -52,13 +53,40 @@ begin
   end;
 }
   parser := TParser.Create(tokens);
-  printer := TASTPrinter.Create();
   expr := parser.Parse;
 
   if hadError then
      Exit();
 
+  printer := TASTPrinter.Create();
   WriteLn(printer.Print(expr));
+  dotmaker := TASTDOTMaker.Create;
+  WriteLn(dotmaker.Make(expr).Text);
+(*
+> 1 + 8 * 89 - - 12
+
+( - ( + 1 ( * 8 89 ) ) ( - 12 ) )
+
+digraph astgraph {
+node [shape=circle, fontsize=10, fontname="Courier"];
+rankdir = BT;
+0 [label="-"]
+1 [label="+"]
+2 [label="1", shape=rectangle]
+2 -> 1
+3 [label="*"]
+4 [label="8", shape=rectangle]
+4 -> 3
+5 [label="89", shape=rectangle]
+5 -> 3
+3 -> 1
+1 -> 0
+6 [label="-"]
+7 [label="12", shape=rectangle]
+7 -> 6
+6 -> 0
+}
+*)
   (* Destructors test *)
   FreeAndNil(scanner);
   FreeAndNil(parser);
