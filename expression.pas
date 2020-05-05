@@ -22,19 +22,19 @@ type
   TExpression = class
     abstract
   public
-    function Accept(ev: IExpressionVisitor): variant; virtual; abstract;
+    function Accept(ev: IExpressionVisitor): TObject; virtual; abstract;
   end;
 
   { TLiteralExpression }
 
   TLiteralExpression = class(TExpression)
   private
-    FValue: variant;
+    FValue: TObject;
   public
-    constructor Create(v: variant);
+    constructor Create(v: TObject);
     destructor Destroy; override;
-    function Accept(ev: IExpressionVisitor): variant; override;
-    property Value: variant read FValue;
+    function Accept(ev: IExpressionVisitor): TObject; override;
+    property Value: TObject read FValue;
   end;
 
   { TUnaryExpression }
@@ -46,7 +46,7 @@ type
   public
     constructor Create(op: TToken; right: TExpression);
     destructor Destroy; override;
-    function Accept(ev: IExpressionVisitor): variant; override;
+    function Accept(ev: IExpressionVisitor): TObject; override;
     property op: TToken read FOp;
     property right: TExpression read FRight;
   end;
@@ -60,7 +60,7 @@ type
   public
     constructor Create(op: TToken; left, right: TExpression);
     destructor Destroy; override;
-    function Accept(ev: IExpressionVisitor): variant; override;
+    function Accept(ev: IExpressionVisitor): TObject; override;
     property op: TToken read FOp;
     property left: TExpression read FLeft;
     property right: TExpression read FRight;
@@ -74,23 +74,23 @@ type
   public
     constructor Create(expr: TExpression);
     destructor Destroy; override;
-    function Accept(ev: IExpressionVisitor): variant; override;
+    function Accept(ev: IExpressionVisitor): TObject; override;
     property expr: TExpression read FExpr;
   end;
 
   IExpressionVisitor = interface
 ['{8A3D7767-D1C5-49F5-BC15-F6C975FBAC67}']
-    function VisitLit(expr: TLiteralExpression): variant;
-    function VisitUn(expr: TUnaryExpression): variant;
-    function VisitBin(expr: TBinaryExpression): variant;
-    function VisitGroup(expr: TGroupingExpression): variant;
+    function VisitLit(expr: TLiteralExpression): TObject;
+    function VisitUn(expr: TUnaryExpression): TObject;
+    function VisitBin(expr: TBinaryExpression): TObject;
+    function VisitGroup(expr: TGroupingExpression): TObject;
   end;
 
 implementation
 
-uses variants;
+uses ptypes;
 
-constructor TLiteralExpression.Create(v: variant);
+constructor TLiteralExpression.Create(v: TObject);
 begin
   self.FValue := v;
 end;
@@ -100,9 +100,9 @@ begin
   inherited Destroy;
 end;
 
-function TLiteralExpression.Accept(ev: IExpressionVisitor): variant;
+function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
 begin
-  Writeln('Accepting literal - ', VarToStr(FValue));
+  Writeln('Accepting literal - ', ObjToStr(FValue));
   Result := ev.VisitLit(self);
 end;
 
@@ -118,7 +118,7 @@ begin
   inherited Destroy;
 end;
 
-function TUnaryExpression.Accept(ev: IExpressionVisitor): variant;
+function TUnaryExpression.Accept(ev: IExpressionVisitor): TObject;
 begin
   Writeln('Accepting unary - ', FOp.lexeme);
   Result := ev.VisitUn(self);
@@ -138,7 +138,7 @@ begin
   inherited Destroy;
 end;
 
-function TBinaryExpression.Accept(ev: IExpressionVisitor): variant;
+function TBinaryExpression.Accept(ev: IExpressionVisitor): TObject;
 begin
   Writeln('Accepting binary - ', FOp.lexeme);
   Result := ev.VisitBin(self);
@@ -155,7 +155,7 @@ begin
   inherited Destroy;
 end;
 
-function TGroupingExpression.Accept(ev: IExpressionVisitor): variant;
+function TGroupingExpression.Accept(ev: IExpressionVisitor): TObject;
 begin
   Writeln('Accepting grouping - ');
   Result := ev.VisitGroup(self);

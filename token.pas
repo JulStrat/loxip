@@ -11,9 +11,7 @@ unit token;
 interface
 
 uses
-  Generics.Collections,
-  TypInfo,
-  Variants;
+  Classes, SysUtils, Generics.Collections;
 
 type
   TTokenKind = (
@@ -49,15 +47,15 @@ type
   private
     FTokenKind: TTokenKind;
     FLexeme: string;
-    FLiteral: variant;
+    FLiteral: TObject;
     FLine: integer;
   public
     constructor Create(tokenKind: TTokenKind; lexeme: string;
-      literal: variant; line: integer);
+      literal: TObject; line: integer);
     function ToString(): string; override;
     property tokenKind: TTokenKind read FTokenKind;
     property lexeme: string read FLexeme;
-    property literal: variant read FLiteral;
+    property literal: TObject read FLiteral;
     property line: integer read FLine;
   end;
 
@@ -66,8 +64,10 @@ var
 
 implementation
 
+uses ptypes, TypInfo;
+
 constructor TToken.Create(tokenKind: TTokenKind; lexeme: string;
-  literal: variant; line: integer);
+  literal: TObject; line: integer);
 begin
   FTokenKind := tokenKind;
   FLexeme := lexeme;
@@ -78,8 +78,9 @@ end;
 { Token to JSON }
 function TToken.ToString: string;
 begin
-  Result := '{ tokenKind: ' + GetEnumName(TypeInfo(TTokenKind), Ord(tokenKind)) +
-    ', lexeme: "' + lexeme + '", literal: ' + VarToStr(literal) + ' }';
+  Result := Format('{ tokenKind: %s, lexeme: "%s", literal: %s }',
+    [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)),
+    self.FLexeme, ObjToStr(self.FLiteral)]);
 end;
 
 initialization

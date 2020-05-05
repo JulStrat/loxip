@@ -28,12 +28,26 @@ type
     function Error(t: TToken; msg: String): TParseError;
 
     //function PeekNext: char;
+    { expression     → equality ; }
     function Expression(): TExpression;
+
+    { equality → comparison ( ( "!=" | "==" ) comparison )* ; }
     function Equality(): TExpression;
+
+    { comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ; }
     function Comparison(): TExpression;
+
+    { addition       → multiplication ( ( "-" | "+" ) multiplication )* ; }
     function Addition(): TExpression;
+
+    { multiplication → unary ( ( "/" | "*" ) unary )* ; }
     function Multiplication(): TExpression;
+
+    { unary → ( "!" | "-" ) unary | primary ; }
     function Unary(): TExpression;
+
+    { primary → NUMBER | STRING | "false" | "true" | "nil"
+            | "(" expression ")" ; }
     function Primary(): TExpression;
   public
     constructor Create(tokens: TObjectList<TToken>);
@@ -43,7 +57,7 @@ type
 
 implementation
 
-uses lox;
+uses lox, ptypes;
 
 constructor TParser.Create(tokens: TObjectList<TToken>);
 begin
@@ -124,17 +138,11 @@ begin
    Result := TParseError.Create(msg);
 end;
 
-{
-expression     → equality ;
-}
 function TParser.Expression(): TExpression;
 begin
   Result := Equality()
 end;
 
-{
-equality → comparison ( ( "!=" | "==" ) comparison )* ;
-}
 function TParser.Equality(): TExpression;
 var
   expr, right: TExpression;
@@ -151,9 +159,6 @@ begin
     Result := expr;
 end;
 
-{
-comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
-}
 function TParser.Comparison(): TExpression;
 var
   expr, right: TExpression;
@@ -205,9 +210,6 @@ begin
   Result := expr;
 end;
 
-{
-unary → ( "!" | "-" ) unary | primary ;
-}
 function TParser.Unary(): TExpression;
 var
   expr, right: TExpression;
@@ -224,18 +226,14 @@ begin
     Result := Primary();
 end;
 
-{
-primary → NUMBER | STRING | "false" | "true" | "nil"
-        | "(" expression ")" ;
-}
 function TParser.Primary(): TExpression;
 var
   expr: TExpression;
 begin
     if match([TTokenKind.tkFALSE]) then
-      Exit(TLiteralExpression.Create(false));
+      Exit(TLiteralExpression.Create(TLoxBool.Create(false)));
     if match([TTokenKind.tkTRUE]) then
-      Exit(TLiteralExpression.Create(true));
+      Exit(TLiteralExpression.Create(TLoxBool.Create(true)));
     if match([TTokenKind.tkNIL]) then
       Exit(TLiteralExpression.Create(nil));
 

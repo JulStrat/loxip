@@ -45,13 +45,15 @@ var
 begin
   scanner := TScanner.Create(Source);
   tokens := scanner.ScanTokens();
-{
+
   (* Print tokens. Chapter - Scanning. *)
+{
   for tok in tokens do
   begin
     WriteLn(tok.ToString());
   end;
 }
+
   parser := TParser.Create(tokens);
   expr := parser.Parse;
 
@@ -60,8 +62,10 @@ begin
 
   printer := TASTPrinter.Create();
   WriteLn(printer.Print(expr));
+
   dotmaker := TASTDOTMaker.Create;
   WriteLn(dotmaker.Make(expr).Text);
+
 (*
 > 1 + 8 * 89 - - 12
 
@@ -88,11 +92,12 @@ rankdir = BT;
 }
 *)
   (* Destructors test *)
+{
   FreeAndNil(scanner);
   FreeAndNil(parser);
   FreeAndNil(expr);
   FreeAndNil(tokens);
-
+}
 end;
 
 class procedure TLox.RunPrompt();

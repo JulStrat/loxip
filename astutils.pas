@@ -15,10 +15,10 @@ type
 
   TASTPrinter = class(IExpressionVisitor)
   public
-    function VisitLit(expr: TLiteralExpression): variant;
-    function VisitUn(expr: TUnaryExpression): variant;
-    function VisitBin(expr: TBinaryExpression): variant;
-    function VisitGroup(expr: TGroupingExpression): variant;
+    function VisitLit(expr: TLiteralExpression): TObject;
+    function VisitUn(expr: TUnaryExpression): TObject;
+    function VisitBin(expr: TBinaryExpression): TObject;
+    function VisitGroup(expr: TGroupingExpression): TObject;
     function Print(expr: TExpression): string;
   end;
 
@@ -29,55 +29,54 @@ type
     FNodeNum: integer;
     FDOT: TStringList;
   public
-    function VisitLit(expr: TLiteralExpression): variant;
-    function VisitUn(expr: TUnaryExpression): variant;
-    function VisitBin(expr: TBinaryExpression): variant;
-    function VisitGroup(expr: TGroupingExpression): variant;
+    function VisitLit(expr: TLiteralExpression): TObject;
+    function VisitUn(expr: TUnaryExpression): TObject;
+    function VisitBin(expr: TBinaryExpression): TObject;
+    function VisitGroup(expr: TGroupingExpression): TObject;
     function Make(expr: TExpression): TStringList;
   end;
 
-
 implementation
 
-uses variants;
+uses ptypes;
 
 { TASTDOTMaker }
 
-function TASTDOTMaker.VisitLit(expr: TLiteralExpression): variant;
+function TASTDOTMaker.VisitLit(expr: TLiteralExpression): TObject;
 begin
-  Result := self.FNodeNum;
-  self.FDOT.Add(Format('%s [label="%s", shape=rectangle]',
-    [VarToStr(Result), VarToStr(expr.Value)]));
+  Result := TObject(self.FNodeNum);
+  self.FDOT.Add(Format('%d [label="%s", shape=rectangle]',
+    [integer(Result), ObjToStr(expr.Value)]));
 end;
 
-function TASTDOTMaker.VisitUn(expr: TUnaryExpression): variant;
+function TASTDOTMaker.VisitUn(expr: TUnaryExpression): TObject;
 begin
-  Result := self.FNodeNum;
-  self.FDOT.Add(Format('%s [label="%s"]', [VarToStr(Result), expr.op.lexeme]));
+  Result := TObject(self.FNodeNum);
+  self.FDOT.Add(Format('%d [label="%s"]', [integer(Result), expr.op.lexeme]));
   Inc(self.FNodeNum);
-  self.FDOT.Add(Format('%s -> %s', [VarToStr(expr.right.Accept(self)),
-    VarToStr(Result)]));
+  self.FDOT.Add(Format('%d -> %d', [integer(expr.right.Accept(self)),
+    integer(Result)]));
 end;
 
-function TASTDOTMaker.VisitBin(expr: TBinaryExpression): variant;
+function TASTDOTMaker.VisitBin(expr: TBinaryExpression): TObject;
 begin
-  Result := self.FNodeNum;
-  self.FDOT.Add(Format('%s [label="%s"]', [VarToStr(Result), expr.op.lexeme]));
+  Result := TObject(self.FNodeNum);
+  self.FDOT.Add(Format('%d [label="%s"]', [integer(Result), expr.op.lexeme]));
   Inc(self.FNodeNum);
-  self.FDOT.Add(Format('%s -> %s', [VarToStr(expr.left.Accept(self)),
-    VarToStr(Result)]));
+  self.FDOT.Add(Format('%d -> %d', [integer(expr.left.Accept(self)),
+    integer(Result)]));
   Inc(self.FNodeNum);
-  self.FDOT.Add(Format('%s -> %s', [VarToStr(expr.right.Accept(self)),
-    VarToStr(Result)]));
+  self.FDOT.Add(Format('%d -> %d', [integer(expr.right.Accept(self)),
+    integer(Result)]));
 end;
 
-function TASTDOTMaker.VisitGroup(expr: TGroupingExpression): variant;
+function TASTDOTMaker.VisitGroup(expr: TGroupingExpression): TObject;
 begin
-  Result := self.FNodeNum;
-  self.FDOT.Add(Format('%s [label="group"]', [VarToStr(Result)]));
+  Result := TObject(self.FNodeNum);
+  self.FDOT.Add(Format('%d [label="group"]', [integer(Result)]));
   Inc(self.FNodeNum);
-  self.FDOT.Add(Format('%s -> %s', [VarToStr(expr.expr.Accept(self)),
-    VarToStr(Result)]));
+  self.FDOT.Add(Format('%s -> %d', [integer(expr.expr.Accept(self)),
+    integer(Result)]));
 end;
 
 function TASTDOTMaker.Make(expr: TExpression): TStringList;
@@ -94,30 +93,53 @@ end;
 
 { TASTPrinter }
 
-function TASTPrinter.VisitLit(expr: TLiteralExpression): variant;
+function TASTPrinter.VisitLit(expr: TLiteralExpression): TObject;
 begin
-  Result := VarToStr(expr.Value);
+  Result := TLoxStr.Create(ObjToStr(expr.Value));
 end;
 
-function TASTPrinter.VisitUn(expr: TUnaryExpression): variant;
+function TASTPrinter.VisitUn(expr: TUnaryExpression): TObject;
+var
+  s: string;
+  o: TLoxStr;
 begin
-  Result := '( ' + expr.op.lexeme + ' ' + expr.right.Accept(self) + ' )';
+  o := TLoxStr(expr.right.Accept(self));
+  s := '( ' + expr.op.lexeme + ' ' + o.Value + ' )';
+  FreeAndNil(o);
+  Result := TLoxStr.Create(s);
 end;
 
-function TASTPrinter.VisitBin(expr: TBinaryExpression): variant;
+function TASTPrinter.VisitBin(expr: TBinaryExpression): TObject;
+var
+  s: string;
+  l, r: TLoxStr;
 begin
-  Result := '( ' + expr.op.lexeme + ' ' + expr.left.Accept(self) +
-    ' ' + expr.right.Accept(self) + ' )';
+  l := TLoxStr(expr.left.Accept(self));
+  r := TLoxStr(expr.right.Accept(self));
+  s := '( ' + expr.op.lexeme + ' ' + l.Value + ' ' + r.Value + ' )';
+  FreeAndNil(l);
+  FreeAndNil(r);
+  Result := TLoxStr.Create(s);
 end;
 
-function TASTPrinter.VisitGroup(expr: TGroupingExpression): variant;
+function TASTPrinter.VisitGroup(expr: TGroupingExpression): TObject;
+var
+  s: string;
+  o: TLoxStr;
 begin
-  Result := '( group ' + expr.expr.Accept(self) + ' )';
+  o := TLoxStr(expr.expr.Accept(self));
+  s := '( group ' + o.Value + ' )';
+  FreeAndNil(o);
+  Result := TLoxStr.Create(s);
 end;
 
 function TASTPrinter.Print(expr: TExpression): string;
+var
+  o: TLoxStr;
 begin
-  Result := expr.Accept(self);
+  o := TLoxStr(expr.Accept(self));
+  Result := o.Value;
+  FreeAndNil(o);
 end;
 
 end.

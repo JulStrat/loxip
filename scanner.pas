@@ -12,7 +12,7 @@ unit scanner;
 interface
 
 uses
-  token,
+  token, ptypes,
   Generics.Collections,
   Classes, SysUtils;
 
@@ -28,7 +28,7 @@ type
 
     procedure ScanToken;
     procedure AddToken(tokenKind: TTokenKind); overload;
-    procedure AddToken(tokenKind: TTokenKind; literal: variant); overload;
+    procedure AddToken(tokenKind: TTokenKind; literal: TObject); overload;
 
     function IsAtEnd: boolean;
     function Advance: char;
@@ -85,7 +85,7 @@ begin
   AddToken(tokenKind, nil);
 end;
 
-procedure TScanner.AddToken(tokenKind: TTokenKind; literal: variant);
+procedure TScanner.AddToken(tokenKind: TTokenKind; literal: TObject);
 var
   txt: string;
 begin
@@ -196,7 +196,7 @@ begin
   cds := FormatSettings.DecimalSeparator;
   try
     FormatSettings.DecimalSeparator := '.';
-    AddToken(TTokenKind.tkNUMBER, StrToFloat(Copy(FSource, FStart, FCurrent - FStart)));
+    AddToken(TTokenKind.tkNUMBER, TLoxNum.Create(StrToFloat(Copy(FSource, FStart, FCurrent - FStart))));
   finally
     FormatSettings.DecimalSeparator := cds;
   end;
@@ -219,7 +219,7 @@ begin
   end;
 
   Advance();
-  AddToken(TTokenKind.tkSTRING, Copy(FSource, FStart + 1, FCurrent - FStart - 2));
+  AddToken(TTokenKind.tkSTRING, TLoxStr.Create(Copy(FSource, FStart + 1, FCurrent - FStart - 2)));
 end;
 
 function TScanner.Peek(): char;
