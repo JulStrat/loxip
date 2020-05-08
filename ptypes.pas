@@ -15,7 +15,7 @@ type
     FValue: Boolean;
     public
     constructor Create(v: Boolean);
-    function Equals(obj: TObject): boolean; override;
+    //function Equals(obj: TObject): boolean; override;
     function ToString: ansistring; override;
     property value: Boolean read FValue;
   end;
@@ -26,9 +26,12 @@ type
     FValue: Double;
     public
     constructor Create(v: Double);
-    function Equals(obj: TObject): boolean; override;
+    //function Equals(obj: TObject): boolean; override;
     function ToString: ansistring; override;
+    //class function Negative(obj: TLoxNum): TLoxNum:
+    //operator Add(const a, b: TLoxNum): Double;
     property value: Double read FValue;
+
   end;
 
   { TLoxStr }
@@ -37,7 +40,7 @@ type
     FValue: String;
     public
     constructor Create(v: String);
-    function Equals(obj: TObject): boolean; override;
+    //function Equals(obj: TObject): boolean; override;
     function ToString: ansistring; override;
     property value: String read FValue;
   end;
@@ -52,7 +55,7 @@ constructor TLoxBool.Create(v: Boolean);
 begin
   FValue := v;
 end;
-
+{
 function TLoxBool.Equals(obj: TObject): boolean;
 begin
   if obj = nil then
@@ -64,7 +67,7 @@ begin
   else
     Result := false;
 end;
-
+}
 function TLoxBool.ToString: ansistring;
 begin
   Result := BoolToStr(FValue, true);
@@ -74,7 +77,7 @@ constructor TLoxNum.Create(v: Double);
 begin
   FValue := v;
 end;
-
+{
 function TLoxNum.Equals(obj: TObject): boolean;
 begin
   if obj = nil then
@@ -86,7 +89,7 @@ begin
   else
     Result := false;
 end;
-
+}
 function TLoxNum.ToString: ansistring;
 begin
   Result := Format('%f', [FValue]);
@@ -96,7 +99,7 @@ constructor TLoxStr.Create(v: String);
 begin
   FValue := v;
 end;
-
+{
 function TLoxStr.Equals(obj: TObject): boolean;
 begin
   if obj = nil then
@@ -108,7 +111,7 @@ begin
   else
     Result := false;
 end;
-
+}
 function TLoxStr.ToString: ansistring;
 begin
   Result := Format('%s', [FValue]);
@@ -121,12 +124,14 @@ begin
   else
     Result := obj.ToString;
 end;
-
+{
 var
   lba, lbb, lbc: TLoxBool;
   lna, lnb, lnc: TLoxNum;
   lsa, lsb, lsc: TLoxStr;
+}
 initialization
+{
 begin
   WriteLn('DEBUG - Equality test.');
   lba := TLoxBool.Create(true);
@@ -163,7 +168,7 @@ begin
   FreeAndNil(lna); FreeAndNil(lnb); FreeAndNil(lnc);
   FreeAndNil(lsa); FreeAndNil(lsb); FreeAndNil(lsc);
 end
-
+}
 finalization
 
 end.

@@ -75,7 +75,7 @@ begin
   Result := TObject(self.FNodeNum);
   self.FDOT.Add(Format('%d [label="group"]', [integer(Result)]));
   Inc(self.FNodeNum);
-  self.FDOT.Add(Format('%s -> %d', [integer(expr.expr.Accept(self)),
+  self.FDOT.Add(Format('%d -> %d', [integer(expr.expr.Accept(self)),
     integer(Result)]));
 end;
 

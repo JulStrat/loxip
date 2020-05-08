@@ -75,12 +75,17 @@ begin
   FLine := line;
 end;
 
-{ Token to JSON }
 function TToken.ToString: string;
 begin
+  { Original format }
+  Result := Format('%s %s %s', [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)).Substring(2),
+    self.FLexeme, ObjToStr(self.FLiteral)]);
+  { JSON }
+  (*
   Result := Format('{ tokenKind: %s, lexeme: "%s", literal: %s }',
     [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)),
     self.FLexeme, ObjToStr(self.FLiteral)]);
+  *)
 end;
 
 initialization

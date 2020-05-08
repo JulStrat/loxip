@@ -101,8 +101,11 @@ begin
 end;
 
 function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
+var
+  msg: String;
 begin
-  Writeln('Accepting literal - ', ObjToStr(FValue));
+  msg := Format('[DEBUG] (%s) Accepting literal expression - %s', [self.ClassName, ObjToStr(FValue)]);
+  Writeln(msg);
   Result := ev.VisitLit(self);
 end;
 
@@ -119,8 +122,11 @@ begin
 end;
 
 function TUnaryExpression.Accept(ev: IExpressionVisitor): TObject;
+var
+  msg: String;
 begin
-  Writeln('Accepting unary - ', FOp.lexeme);
+  msg := Format('[DEBUG] (%s) Accepting unary expression - %s', [self.ClassName, self.FOp.lexeme]);
+  Writeln(msg);
   Result := ev.VisitUn(self);
 end;
 
@@ -139,8 +145,11 @@ begin
 end;
 
 function TBinaryExpression.Accept(ev: IExpressionVisitor): TObject;
+var
+  msg: String;
 begin
-  Writeln('Accepting binary - ', FOp.lexeme);
+  msg := Format('[DEBUG] (%s) Accepting binary expression - %s', [self.ClassName, self.FOp.lexeme]);
+  Writeln(msg);
   Result := ev.VisitBin(self);
 end;
 
@@ -156,8 +165,11 @@ begin
 end;
 
 function TGroupingExpression.Accept(ev: IExpressionVisitor): TObject;
+var
+  msg: String;
 begin
-  Writeln('Accepting grouping - ');
+  msg := Format('[DEBUG] (%s) Accepting grouping expression', [self.ClassName]);
+  Writeln(msg);
   Result := ev.VisitGroup(self);
 end;
 

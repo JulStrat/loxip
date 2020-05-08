@@ -13,18 +13,23 @@ interface
 
 uses
   Classes, SysUtils
-  , token;
+  , token, interpreter, rterror;
 
 type
+
+  { TLox }
+
   TLox = class
     class var
     hadError: boolean;
     hadRunTimeError: boolean;
+    inter: TInterpreter;
     class procedure Run(Source: string); static;
     class procedure RunPrompt(); static;
-    class procedure Error(line: integer; message: string); static; overload;
-    class procedure Error(token: TToken; message: String); static; overload;
-    class procedure Report(line: integer; where: string; message: string); static;
+    class procedure Error(line: integer; msg: string); static; overload;
+    class procedure Error(token: TToken; msg: String); static; overload;
+    class procedure RunTimeError(rte: ERunTimeError); static;
+    class procedure Report(line: integer; where: string; msg: string); static;
   end;
 
 implementation
@@ -47,12 +52,12 @@ begin
   tokens := scanner.ScanTokens();
 
   (* Print tokens. Chapter - Scanning. *)
-{
+//{
   for tok in tokens do
   begin
     WriteLn(tok.ToString());
   end;
-}
+//}
 
   parser := TParser.Create(tokens);
   expr := parser.Parse;
@@ -65,6 +70,7 @@ begin
 
   dotmaker := TASTDOTMaker.Create;
   WriteLn(dotmaker.Make(expr).Text);
+  inter.Interpret(expr);
 
 (*
 > 1 + 8 * 89 - - 12
@@ -116,28 +122,37 @@ begin
   end;
 end;
 
-class procedure TLox.Error(line: integer; message: string);
+class procedure TLox.Error(line: integer; msg: string);
 begin
-  Report(line, '', message);
+  Report(line, '', msg);
 end;
 
-class procedure TLox.Report(line: integer; where: string; message: string);
+class procedure TLox.Report(line: integer; where: string; msg: string);
 begin
-  WriteLn('[line - ', line, '] Error - ', where, ' : ', message);
+  WriteLn(Format('[line %d] Error%s: %s', [line, where, msg]));
   hadError := True;
 end;
 
-class procedure TLox.Error(token: TToken; message: String);
+class procedure TLox.Error(token: TToken; msg: String);
 begin
   if token.tokenKind = TTokenKind.tkEOF then
-     report(token.line, ' at end ', message)
+     report(token.line, ' at end ', msg)
   else
-     report(token.line, ' at "' + token.lexeme + '" ', message);
+     report(token.line, ' at "' + token.lexeme + '" ', msg);
+end;
+
+class procedure TLox.RunTimeError(rte: ERunTimeError);
+var
+  msg: string;
+begin
+  msg := Format('[ERROR] %s [line %d].', [rte.Message, rte.token.line]);
+  WriteLn(msg);
+  hadRunTimeError := true;
 end;
 
 initialization
   TLox.hadError := False;
   TLox.hadRunTimeError := False;
-
+  TLox.inter := TInterpreter.Create;
 end.
 
