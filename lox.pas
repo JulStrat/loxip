@@ -25,7 +25,7 @@ type
     hadRunTimeError: boolean;
     inter: TInterpreter;
     class procedure Run(Source: string); static;
-    class procedure RunPrompt(); static;
+    class procedure RunPrompt; static;
     class procedure Error(line: integer; msg: string); static; overload;
     class procedure Error(token: TToken; msg: String); static; overload;
     class procedure RunTimeError(rte: ERunTimeError); static;
@@ -35,7 +35,7 @@ type
 implementation
 
 uses Generics.Collections
-  , expression
+  , expression, statement
   , scanner, parser, astutils;
 
 class procedure TLox.Run(Source: string);
@@ -43,6 +43,7 @@ var
   scanner: TScanner;
   parser: TParser;
   tokens: TObjectList<TToken>;
+  stm: TObjectList<TStatement>;
   printer: TASTPrinter;
   dotmaker: TASTDOTMaker;
   tok: TToken;
@@ -52,25 +53,30 @@ begin
   tokens := scanner.ScanTokens();
 
   (* Print tokens. Chapter - Scanning. *)
-//{
+  {
   for tok in tokens do
   begin
     WriteLn(tok.ToString());
   end;
-//}
+  }
 
   parser := TParser.Create(tokens);
-  expr := parser.Parse;
+  stm := parser.Parse;
+
+  { expr := parser.Parse; }
 
   if hadError then
      Exit();
+  inter.Interpret(stm);
 
+  {
   printer := TASTPrinter.Create();
   WriteLn(printer.Print(expr));
 
   dotmaker := TASTDOTMaker.Create;
   WriteLn(dotmaker.Make(expr).Text);
   inter.Interpret(expr);
+  }
 
 (*
 > 1 + 8 * 89 - - 12
@@ -104,9 +110,10 @@ rankdir = BT;
   FreeAndNil(expr);
   FreeAndNil(tokens);
 }
+  FreeAndNil(stm);
 end;
 
-class procedure TLox.RunPrompt();
+class procedure TLox.RunPrompt;
 var
   inp: string;
 begin
@@ -151,6 +158,8 @@ begin
 end;
 
 initialization
+  SysUtils.DecimalSeparator := '.';
+
   TLox.hadError := False;
   TLox.hadRunTimeError := False;
   TLox.inter := TInterpreter.Create;

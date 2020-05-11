@@ -19,6 +19,8 @@ type
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
+    function VisitVar(expr: TVariableExpression): TObject;
+    function VisitAssign(expr: TAssignmentExpression): TObject;
     function Print(expr: TExpression): string;
   end;
 
@@ -33,6 +35,8 @@ type
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
+    function VisitVar(expr: TVariableExpression): TObject;
+    function VisitAssign(expr: TAssignmentExpression): TObject;
     function Make(expr: TExpression): TStringList;
   end;
 
@@ -77,6 +81,19 @@ begin
   Inc(self.FNodeNum);
   self.FDOT.Add(Format('%d -> %d', [integer(expr.expr.Accept(self)),
     integer(Result)]));
+end;
+
+function TASTDOTMaker.VisitVar(expr: TVariableExpression): TObject;
+begin
+  Result := TObject(self.FNodeNum);
+  self.FDOT.Add(Format('%d [label="%s", shape=rectangle]',
+    [integer(Result), expr.varName.lexeme]));
+end;
+
+function TASTDOTMaker.VisitAssign(expr: TAssignmentExpression): TObject;
+begin
+  // TO DO
+  Result := nil;
 end;
 
 function TASTDOTMaker.Make(expr: TExpression): TStringList;
@@ -131,6 +148,17 @@ begin
   s := '( group ' + o.Value + ' )';
   FreeAndNil(o);
   Result := TLoxStr.Create(s);
+end;
+
+function TASTPrinter.VisitVar(expr: TVariableExpression): TObject;
+begin
+  Result := TLoxStr.Create(expr.varName.lexeme);
+end;
+
+function TASTPrinter.VisitAssign(expr: TAssignmentExpression): TObject;
+begin
+  // TO DO
+  Result := nil;
 end;
 
 function TASTPrinter.Print(expr: TExpression): string;

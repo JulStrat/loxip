@@ -7,28 +7,38 @@ unit interpreter;
 interface
 
 uses
-  Classes, SysUtils
-  , token, expression, rterror;
+  Classes, SysUtils, Generics.Collections
+  , token, expression, statement, environment, rterror;
 
 type
   { TInterpreter }
 
-  TInterpreter = class(IExpressionVisitor)
+  TInterpreter = class(IExpressionVisitor, IStatementVisitor)
   private
+    FEnvir: TEnvironment;
     function Evaluate(expr: TExpression): TObject;
     function IsTruthy(obj: TObject): boolean;
     function IsEqual(left, right: TObject): boolean;
-    function CheckNumberOperand(op: TToken; obj: TObject): ERunTimeError;
-    function CheckNumberOperands(op: TToken; left, right: TObject): ERunTimeError;
-    function CheckUnOperand(expr: TUnaryExpression): ERunTimeError;
-    function CheckBinOperands(expr: TBinaryExpression): ERunTimeError;
     function Stringify(obj: TObject): string;
   public
+    constructor Create;
+    { Expression visitor }
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
-    procedure Interpret(expr: TExpression);
+    function VisitVar(expr: TVariableExpression): TObject;
+    function VisitAssign(expr: TAssignmentExpression): TObject;
+    { Statement visitor }
+    procedure VisitBlockStm(stm: TBlockStatement);
+    procedure VisitExprStm(stm: TExpressionStatement);
+    procedure VisitPrintStm(stm: TPrintStatement);
+    procedure VisitVarStm(stm: TVariableStatement);
+    { helper }
+    procedure Execute(stm: TStatement);
+    { do job }
+    { procedure Interpret(expr: TExpression); }
+    procedure Interpret(stm: TObjectList<TStatement>);
   end;
 
 implementation
@@ -39,6 +49,7 @@ uses ptypes, lox;
 
 function TInterpreter.Evaluate(expr: TExpression): TObject;
 begin
+  //WriteLn(Format('[DEBUG] - Evaluating %s.', [expr.ClassName]));
   Result := expr.Accept(self);
 end;
 
@@ -58,8 +69,8 @@ begin
     Exit(True);
   if (left = nil) or (right = nil) then
     Exit(False);
-  if left.ClassType <> right.ClassType then;
-  Exit(False);
+  if left.ClassType <> right.ClassType then
+    Exit(False);
   if left.ClassType = TLoxBool then
     Exit(TLoxBool(left).Value = TLoxBool(right).Value);
   if left.ClassType = TLoxNum then
@@ -71,36 +82,14 @@ begin
 
 end;
 
-function TInterpreter.CheckNumberOperand(op: TToken; obj: TObject): ERunTimeError;
-begin
-  if obj is TLoxNum then
-    Result := nil
-  else
-    Result := ERuntimeError.Create(op, 'Operand must be a number.');
-end;
-
-function TInterpreter.CheckNumberOperands(op: TToken; left, right: TObject
-  ): ERunTimeError;
-begin
-  if (left is TLoxNum) and (right is TLoxNum) then
-    Result := nil
-  else
-    Result := ERuntimeError.Create(op, 'Operands must be numbers.');
-end;
-
-function TInterpreter.CheckUnOperand(expr: TUnaryExpression): ERunTimeError;
-begin
-
-end;
-
-function TInterpreter.CheckBinOperands(expr: TBinaryExpression): ERunTimeError;
-begin
-
-end;
-
 function TInterpreter.Stringify(obj: TObject): string;
 begin
   Result := ObjToStr(obj);
+end;
+
+constructor TInterpreter.Create;
+begin
+  FEnvir := TEnvironment.Create;
 end;
 
 function TInterpreter.VisitLit(expr: TLiteralExpression): TObject;
@@ -123,11 +112,10 @@ begin
       obj := TLoxBool.Create(not self.IsTruthy(right));
 
     TTokenKind.tkMINUS:
-    begin
-      rte := CheckNumberOperand(expr.op, right);
-      if rte = nil then
-        obj := TLoxNum.Create(-TLoxNum(right).Value);
-    end;
+      if right is TLoxNum then
+        obj := TLoxNum.Create(-TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operand must be a number.');
   end;
 
   FreeAndNil(right);
@@ -150,74 +138,67 @@ begin
 
   case expr.op.tokenKind of
     TTokenKind.tkPLUS: { + }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxNum.Create(TLoxNum(left).Value + TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxNum.Create(TLoxNum(left).Value + TLoxNum(right).Value)
+      else
+        if (left is TLoxStr) or (right is TLoxStr) then
+          obj := TLoxStr.Create(left.ToString() + right.ToString())
+        else
+          rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or either string.');
 
     TTokenKind.tkMINUS: { - }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxNum.Create(TLoxNum(left).Value - TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxNum.Create(TLoxNum(left).Value - TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkSTAR: { * }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxNum.Create(TLoxNum(left).Value * TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxNum.Create(TLoxNum(left).Value * TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkSLASH: { / }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxNum.Create(TLoxNum(left).Value / TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        if TLoxNum(right).Value <> 0 then
+          obj := TLoxNum.Create(TLoxNum(left).Value / TLoxNum(right).Value)
+        else
+          rte := ERuntimeError.Create(expr.op, 'Division by zero.')
+      else
+        if (left is TLoxStr) or (right is TLoxStr) then
+          obj := TLoxStr.Create(left.ToString + right.ToString)
+        else
+          rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or at least one - string.');
 
     TTokenKind.tkGREATER: { > }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxBool.Create(TLoxNum(left).Value > TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxBool.Create(TLoxNum(left).Value > TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkGREATER_EQUAL: { >= }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxBool.Create(TLoxNum(left).Value >= TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxBool.Create(TLoxNum(left).Value >= TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkLESS: { < }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxBool.Create(TLoxNum(left).Value < TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxBool.Create(TLoxNum(left).Value < TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkLESS_EQUAL: { <= }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxBool.Create(TLoxNum(left).Value <= TLoxNum(right).Value);
-    end;
+      if (left is TLoxNum) and (right is TLoxNum) then
+        obj := TLoxBool.Create(TLoxNum(left).Value <= TLoxNum(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkEQUAL_EQUAL: { == }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxBool.Create(TLoxNum(left).Value = TLoxNum(right).Value);
-    end;
+      obj := TLoxBool.Create(self.IsEqual(left, right));
 
     TTokenKind.tkBANG_EQUAL:  { != }
-    begin
-      rte := self.CheckNumberOperands(expr.op, left, right);
-      if rte = nil then
-        obj := TLoxBool.Create(TLoxNum(left).Value <> TLoxNum(right).Value);
-    end;
+      obj := TLoxBool.Create(not self.IsEqual(left, right));
 
   end;
   FreeAndNil(left);
@@ -232,6 +213,55 @@ begin
   Result := self.Evaluate(expr.expr);
 end;
 
+function TInterpreter.VisitVar(expr: TVariableExpression): TObject;
+begin
+  Result := self.FEnvir.Get(expr.varName);
+end;
+
+function TInterpreter.VisitAssign(expr: TAssignmentExpression): TObject;
+var
+  obj: TObject;
+begin
+  obj := self.Evaluate(expr.value);
+  self.FEnvir.Assign(expr.varName, obj);;
+  Result := obj
+end;
+
+{ Statements }
+procedure TInterpreter.VisitBlockStm(stm: TBlockStatement);
+begin
+
+end;
+
+procedure TInterpreter.VisitExprStm(stm: TExpressionStatement);
+begin
+  self.Evaluate(stm.expr);
+end;
+
+procedure TInterpreter.VisitPrintStm(stm: TPrintStatement);
+var
+  obj: TObject;
+begin
+  obj := self.Evaluate(stm.expr);
+  WriteLn(ObjToStr(obj));
+end;
+
+procedure TInterpreter.VisitVarStm(stm: TVariableStatement);
+var
+  obj: TObject;
+begin
+  obj := nil;
+  if stm.expr <> nil then
+    obj := self.Evaluate(stm.expr);
+  self.FEnvir.Define(stm.token.lexeme, obj);
+end;
+
+procedure TInterpreter.Execute(stm: TStatement);
+begin
+  stm.Accept(self);
+end;
+
+{
 procedure TInterpreter.Interpret(expr: TExpression);
 var
   obj: TObject;
@@ -240,6 +270,25 @@ begin
     try
       obj := evaluate(expr);
       WriteLn(Stringify(obj));
+    except
+      on e: ERunTimeError do
+        TLox.RunTimeError(e)
+    end;
+  finally
+    ;
+  end;
+end;
+}
+
+procedure TInterpreter.Interpret(stm: TObjectList<TStatement>);
+var
+  obj: TObject;
+  s: TStatement;
+begin
+  try
+    try
+      for s in stm do
+        self.Execute(s);
     except
       on e: ERunTimeError do
         TLox.RunTimeError(e)

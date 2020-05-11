@@ -21,18 +21,16 @@ type
     private
       FToken: TToken;
     public
-      constructor Create(t: TToken; const msg: string);
+      constructor Create(tok: TToken; const msg: string);
       property token: TToken read FToken;
   end;
 
 implementation
 
-{ ERunTimeError }
-
-constructor ERunTimeError.Create(t: TToken; const msg: string);
+constructor ERunTimeError.Create(tok: TToken; const msg: string);
 begin
   inherited Create(msg);
-  FToken := t;
+  FToken := tok;
 end;
 
 end.

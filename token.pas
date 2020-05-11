@@ -36,7 +36,7 @@ type
     tkAND, tkOR, tkTRUE, tkFALSE,
     tkCLASS, tkSUPER, tkTHIS,
     tkIF, tkELSE, tkFOR, tkWHILE,
-    tkFUNCT, tkRETURN,
+    tkFUN, tkRETURN,
     tkVAR, tkNIL,
     tkPRINT,
 
@@ -52,7 +52,7 @@ type
   public
     constructor Create(tokenKind: TTokenKind; lexeme: string;
       literal: TObject; line: integer);
-    function ToString(): string; override;
+    function ToString: string; override;
     property tokenKind: TTokenKind read FTokenKind;
     property lexeme: string read FLexeme;
     property literal: TObject read FLiteral;
@@ -104,7 +104,7 @@ initialization
   loxKeywords.Add('for', TTokenKind.tkFOR);
   loxKeywords.Add('while', TTokenKind.tkWHILE);
 
-  loxKeywords.Add('fun', TTokenKind.tkFUNCT);
+  loxKeywords.Add('fun', TTokenKind.tkFUN);
   loxKeywords.Add('return', TTokenKind.tkRETURN);
 
   loxKeywords.Add('var', TTokenKind.tkVAR);

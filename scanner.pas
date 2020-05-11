@@ -12,9 +12,8 @@ unit scanner;
 interface
 
 uses
-  token, ptypes,
-  Generics.Collections,
-  Classes, SysUtils;
+  Classes, SysUtils, Generics.Collections
+  , token;
 
 type
 
@@ -32,7 +31,7 @@ type
 
     function IsAtEnd: boolean;
     function Advance: char;
-    function Match(expected: char): boolean;
+    function Match(expect: char): boolean;
     function Peek: char;
     function PeekNext: char;
 
@@ -51,7 +50,7 @@ type
 
 implementation
 
-uses lox;
+uses lox, ptypes;
 
 constructor TScanner.Create(src: string);
 begin
@@ -68,13 +67,13 @@ begin
   inherited;
 end;
 
-function TScanner.IsAtEnd(): boolean;
+function TScanner.IsAtEnd: boolean;
 begin
   //Result := FCurrent > FSource.Length;
   Result := FCurrent > High(FSource);
 end;
 
-function TScanner.Advance(): char;
+function TScanner.Advance: char;
 begin
   Result := FSource[FCurrent];
   Inc(FCurrent);
@@ -93,7 +92,7 @@ begin
   FTokens.Add(TToken.Create(tokenKind, txt, literal, FLine));
 end;
 
-procedure TScanner.ScanToken();
+procedure TScanner.ScanToken;
 var
   c: char;
 begin
@@ -147,12 +146,12 @@ begin
 
 end;
 
-procedure TScanner.ReadIdentifier();
+procedure TScanner.ReadIdentifier;
 var
   txt: string;
   tk: TTokenKind;
 begin
-  while (IsAlphaNumeric(Peek())) do
+  while IsAlphaNumeric(Peek()) do
     Advance();
 
   txt := System.Copy(FSource, FStart, FCurrent - FStart);
@@ -169,8 +168,7 @@ end;
 
 function TScanner.IsAlpha(c: char): boolean;
 begin
-  Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or
-    (c = '_');
+  Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or (c = '_');
 end;
 
 function TScanner.IsDigit(c: char): boolean;
@@ -179,8 +177,6 @@ begin
 end;
 
 procedure TScanner.ReadNumber;
-var
-  cds: char;
 begin
   while IsDigit(Peek()) do
     Advance();
@@ -188,41 +184,35 @@ begin
   if (Peek() = '.') and isDigit(PeekNext()) then
   begin
     Advance();
-
     while IsDigit(Peek()) do
       Advance();
   end;
 
-  cds := FormatSettings.DecimalSeparator;
-  try
-    FormatSettings.DecimalSeparator := '.';
-    AddToken(TTokenKind.tkNUMBER, TLoxNum.Create(StrToFloat(Copy(FSource, FStart, FCurrent - FStart))));
-  finally
-    FormatSettings.DecimalSeparator := cds;
-  end;
+  AddToken(TTokenKind.tkNUMBER,
+    TLoxNum.Create(StrToFloat(Copy(FSource, FStart, FCurrent - FStart))));
 end;
 
-procedure TScanner.ReadString();
+procedure TScanner.ReadString;
 begin
   while (Peek() <> '"') and not IsAtEnd() do
   begin
-    if (Peek() = #10) then
+    if Peek() = #10 then
       Inc(FLine);
-
     Advance();
   end;
 
-  if (isAtEnd()) then
+  if isAtEnd() then
   begin
     TLox.Error(FLine, 'Unterminated string.');
     Exit();
   end;
 
   Advance();
-  AddToken(TTokenKind.tkSTRING, TLoxStr.Create(Copy(FSource, FStart + 1, FCurrent - FStart - 2)));
+  AddToken(TTokenKind.tkSTRING,
+    TLoxStr.Create(Copy(FSource, FStart + 1, FCurrent - FStart - 2)));
 end;
 
-function TScanner.Peek(): char;
+function TScanner.Peek: char;
 begin
   if isAtEnd() then
     Result := #0
@@ -230,7 +220,7 @@ begin
     Result := FSource[FCurrent];
 end;
 
-function TScanner.PeekNext(): char;
+function TScanner.PeekNext: char;
 begin
   if (FCurrent + 1) > High(FSource) then
     Result := #0
@@ -238,11 +228,11 @@ begin
     Result := FSource[FCurrent + 1];
 end;
 
-function TScanner.Match(expected: char): boolean;
+function TScanner.Match(expect: char): boolean;
 begin
   if IsAtEnd() then
     Exit(False);
-  if (FSource[FCurrent] <> expected) then
+  if FSource[FCurrent] <> expect then
     Exit(False);
 
   Inc(FCurrent);

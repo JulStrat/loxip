@@ -78,12 +78,40 @@ type
     property expr: TExpression read FExpr;
   end;
 
+  { TVariableExpression }
+
+  TVariableExpression = class(TExpression)
+  private
+    FVarName: TToken;
+  public
+    constructor Create(varName: TToken);
+    destructor Destroy; override;
+    function Accept(ev: IExpressionVisitor): TObject; override;
+    property varName: TToken read FVarName;
+  end;
+
+  { TAssignmentExpression }
+
+  TAssignmentExpression = class(TExpression)
+  private
+    FVarName: TToken;
+    FValue: TExpression;
+  public
+    constructor Create(varName: TToken; val: TExpression);
+    destructor Destroy; override;
+    function Accept(ev: IExpressionVisitor): TObject; override;
+    property varName: TToken read FVarName;
+    property value: TExpression read FValue;
+  end;
+
   IExpressionVisitor = interface
 ['{8A3D7767-D1C5-49F5-BC15-F6C975FBAC67}']
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
+    function VisitVar(expr: TVariableExpression): TObject;
+    function VisitAssign(expr: TAssignmentExpression): TObject;
   end;
 
 implementation
@@ -172,5 +200,46 @@ begin
   Writeln(msg);
   Result := ev.VisitGroup(self);
 end;
+
+constructor TVariableExpression.Create(varName: TToken);
+begin
+  self.FVarName := varName;
+end;
+
+destructor TVariableExpression.Destroy;
+begin
+  FreeAndNil(self.FVarName);
+  inherited Destroy;
+end;
+
+function TVariableExpression.Accept(ev: IExpressionVisitor): TObject;
+var
+  msg: String;
+begin
+  msg := Format('[DEBUG] (%s) Accepting variable expression - %s', [self.ClassName, self.FVarName.lexeme]);
+  Writeln(msg);
+  Result := ev.VisitVar(self);
+end;
+
+constructor TAssignmentExpression.Create(varName: TToken; val: TExpression);
+begin
+  self.FVarName := varName;
+  self.FValue := val;
+end;
+
+destructor TAssignmentExpression.Destroy;
+begin
+  inherited Destroy;
+end;
+
+function TAssignmentExpression.Accept(ev: IExpressionVisitor): TObject;
+var
+  msg: String;
+begin
+  msg := Format('[DEBUG] (%s) Accepting assignment expression - %s', [self.ClassName, self.FVarName.lexeme]);
+  Writeln(msg);
+  Result := ev.VisitAssign(self);
+end;
+
 
 end.
