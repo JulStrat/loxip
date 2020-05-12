@@ -53,12 +53,14 @@ type
     (* Statements rules *)
     { declaration : varDecl | statement }
     function Declaration: TStatement;
-    { statement : exprStmt | printStmt }
+    { statement : exprStmt | printStmt | printDotStm }
     function Statement: TStatement;
     { exprStmt : expression ";" }
     function ExprStatement: TStatement;
     { printStmt : "print" expression ";" }
     function PrintStatement: TStatement;
+    { printDotStmt : "printdot" expression ";" }
+    function PrintDOTStatement: TStatement;
     { varDecl : "var" IDENTIFIER ( "=" expression )? ";" }
     function VarDeclaration: TStatement;
   public
@@ -346,7 +348,10 @@ begin
   if self.Match([TTokenKind.tkPRINT]) then
     Result := self.PrintStatement()
   else
-    Result := self.ExprStatement();
+    if self.Match([TTokenKind.tkPRINTDOT]) then
+      Result := self.PrintDOTStatement()
+    else
+      Result := self.ExprStatement();
 end;
 
 function TParser.ExprStatement: TStatement;
@@ -365,6 +370,15 @@ begin
   expr := self.Expression();
   self.Consume(TTokenKind.tkSEMICOLON, 'Expect '';'' after expression.');
   Result := TPrintStatement.Create(expr);
+end;
+{ TO DO RWR }
+function TParser.PrintDOTStatement: TStatement;
+var
+  expr: TExpression;
+begin
+  expr := self.Expression();
+  self.Consume(TTokenKind.tkSEMICOLON, 'Expect '';'' after expression.');
+  Result := TPrintDOTStatement.Create(expr);
 end;
 
 function TParser.VarDeclaration: TStatement;

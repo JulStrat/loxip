@@ -61,6 +61,11 @@ type
     property expr: TExpression read FExpr;
   end;
 
+  TPrintDOTStatement = class(TPrintStatement)
+  public
+    procedure Accept(ev: IStatementVisitor); override;
+  end;
+
   { TVariableStatement }
 
   TVariableStatement = class(TStatement)
@@ -80,6 +85,7 @@ type
     procedure VisitBlockStm(stm: TBlockStatement);  
     procedure VisitExprStm(stm: TExpressionStatement);
     procedure VisitPrintStm(stm: TPrintStatement);
+    procedure VisitPrintDOTStm(stm: TPrintDOTStatement);
     procedure VisitVarStm(stm: TVariableStatement);  	
   end;
 
@@ -134,6 +140,11 @@ end;
 procedure TPrintStatement.Accept(ev: IStatementVisitor);
 begin
   ev.VisitPrintStm(self);
+end;
+
+procedure TPrintDOTStatement.Accept(ev: IStatementVisitor);
+begin
+  ev.VisitPrintDOTStm(self);
 end;
 
 { TVariableStatement }

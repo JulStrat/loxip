@@ -33,6 +33,7 @@ type
     procedure VisitBlockStm(stm: TBlockStatement);
     procedure VisitExprStm(stm: TExpressionStatement);
     procedure VisitPrintStm(stm: TPrintStatement);
+    procedure VisitPrintDOTStm(stm: TPrintDOTStatement);
     procedure VisitVarStm(stm: TVariableStatement);
     { helper }
     procedure Execute(stm: TStatement);
@@ -43,7 +44,7 @@ type
 
 implementation
 
-uses ptypes, lox;
+uses ptypes, lox, astutils;
 
 { TInterpreter }
 
@@ -244,6 +245,15 @@ var
 begin
   obj := self.Evaluate(stm.expr);
   WriteLn(ObjToStr(obj));
+end;
+
+procedure TInterpreter.VisitPrintDOTStm(stm: TPrintDOTStatement);
+var
+  dot: TASTDOTMaker;
+begin
+  dot := TASTDOTMaker.Create();
+  WriteLn(dot.Make(stm.expr).Text);
+  FreeAndNil(dot);
 end;
 
 procedure TInterpreter.VisitVarStm(stm: TVariableStatement);

@@ -38,7 +38,7 @@ type
     tkIF, tkELSE, tkFOR, tkWHILE,
     tkFUN, tkRETURN,
     tkVAR, tkNIL,
-    tkPRINT,
+    tkPRINT, tkPRINTDOT,
 
     // End of file.
     tkEOF);
@@ -111,6 +111,7 @@ initialization
   loxKeywords.Add('nil', TTokenKind.tkNIL);
 
   loxKeywords.Add('print', TTokenKind.tkPRINT);
+  loxKeywords.Add('printdot', TTokenKind.tkPRINTDOT);
 
 finalization
   loxKeywords.Free();
