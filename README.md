@@ -6,17 +6,43 @@ Work in progress.
 
 ## Challenges
 
+### Chapter 5.Representing Code 
+
+3. Reverse Polish Notation.
+```
+> print (1 + 2) * (4 - 3);
+[DEBUG] (TASTPrinter) (* (group (+ 1 2)) (group (- 4 3)))
+[DEBUG] (TASTPrinter RPN) 1 2 + 4 3 - *
+```
+
 ### Chapter 7.Evaluating Expressions
 
 2. Define `+` such that if either operand is a string, 
 the other is converted to a string and the results are then concatenated. 
-
+```
+> print "Hello " + 2020 + " " + true;
+[DEBUG] (TASTPrinter) (+ (+ (+ "Hello " 2020) " ") True)
+[DEBUG] (TASTPrinter RPN) "Hello " 2020 + " " + True +
+[DEBUG] (TInterpreter) Evaluating TBinaryExpression.
+[DEBUG] (TInterpreter) Evaluating TBinaryExpression.
+[DEBUG] (TInterpreter) Evaluating TBinaryExpression.
+[DEBUG] (TInterpreter) Evaluating TLiteralExpression.
+[DEBUG] (TInterpreter) Evaluating TLiteralExpression.
+[DEBUG] (TInterpreter) Evaluating TLiteralExpression.
+[DEBUG] (TInterpreter) Evaluating TLiteralExpression.
+Hello 2020 True
+```
 3. Division by zero.
-   
+```
+> 8/0;
+[DEBUG] (TInterpreter) Evaluating TBinaryExpression.
+[DEBUG] (TInterpreter) Evaluating TLiteralExpression.
+[DEBUG] (TInterpreter) Evaluating TLiteralExpression.
+[ERROR] Division by zero. [line 1].
+```   
 ## AST visualization
 
 Statement `printdot expression;` prints espression AST in [DOT format](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
-
 ```
 > printdot 1 + 8 * 89 - - 12;
 [DEBUG] (TBinaryExpression) Accepting binary expression - -

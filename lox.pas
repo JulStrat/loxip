@@ -35,8 +35,8 @@ type
 implementation
 
 uses Generics.Collections
-  , expression, statement
-  , scanner, parser, astutils;
+  , {expression,} statement
+  , scanner, parser{, astutils};
 
 class procedure TLox.Run(Source: string);
 var
@@ -44,11 +44,10 @@ var
   parser: TParser;
   tokens: TObjectList<TToken>;
   stm: TObjectList<TStatement>;
-  printer: TASTPrinter;
-  dotmaker: TASTDOTMaker;
-  tok: TToken;
-  expr: TExpression;
+  counter: integer; // loop counter
+  benchStart, benchEnd: QWord;
 begin
+  //source := 'var x = 101.1; var y = 1000001.1; var z; z = x * x * x * x; print z;';
   scanner := TScanner.Create(Source);
   tokens := scanner.ScanTokens();
 
@@ -67,50 +66,17 @@ begin
 
   if hadError then
      Exit();
+  benchStart := GetTickCount64();
+  //for counter := 1 to 20 do
   inter.Interpret(stm);
-
-  {
-  printer := TASTPrinter.Create();
-  WriteLn(printer.Print(expr));
-
-  dotmaker := TASTDOTMaker.Create;
-  WriteLn(dotmaker.Make(expr).Text);
-  inter.Interpret(expr);
-  }
-
-(*
-> 1 + 8 * 89 - - 12
-
-( - ( + 1 ( * 8 89 ) ) ( - 12 ) )
-
-digraph astgraph {
-node [shape=circle, fontsize=10, fontname="Courier"];
-rankdir = BT;
-0 [label="-"]
-1 [label="+"]
-2 [label="1", shape=rectangle]
-2 -> 1
-3 [label="*"]
-4 [label="8", shape=rectangle]
-4 -> 3
-5 [label="89", shape=rectangle]
-5 -> 3
-3 -> 1
-1 -> 0
-6 [label="-"]
-7 [label="12", shape=rectangle]
-7 -> 6
-6 -> 0
-}
-*)
+  benchEnd := GetTickCount64();
+  WriteLn(Format('Tick count - %d.', [benchEnd - benchStart]));
   (* Destructors test *)
-{
+
+  FreeAndNil(stm);
+  FreeAndNil(tokens);
   FreeAndNil(scanner);
   FreeAndNil(parser);
-  FreeAndNil(expr);
-  FreeAndNil(tokens);
-}
-  FreeAndNil(stm);
 end;
 
 class procedure TLox.RunPrompt;

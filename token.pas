@@ -11,7 +11,8 @@ unit token;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections;
+  Classes, SysUtils, Generics.Collections
+  , ptypes;
 
 type
   TTokenKind = (
@@ -43,19 +44,22 @@ type
     // End of file.
     tkEOF);
 
+  { TToken }
+
   TToken = class
   private
     FTokenKind: TTokenKind;
     FLexeme: string;
-    FLiteral: TObject;
+    FLiteral: TLoxObject;
     FLine: integer;
   public
     constructor Create(tokenKind: TTokenKind; lexeme: string;
-      literal: TObject; line: integer);
+      literal: TLoxObject; line: integer);
+    destructor Destroy; override;
     function ToString: string; override;
     property tokenKind: TTokenKind read FTokenKind;
     property lexeme: string read FLexeme;
-    property literal: TObject read FLiteral;
+    property literal: TLoxObject read FLiteral;
     property line: integer read FLine;
   end;
 
@@ -64,10 +68,10 @@ var
 
 implementation
 
-uses ptypes, TypInfo;
+uses TypInfo;
 
 constructor TToken.Create(tokenKind: TTokenKind; lexeme: string;
-  literal: TObject; line: integer);
+  literal: TLoxObject; line: integer);
 begin
   FTokenKind := tokenKind;
   FLexeme := lexeme;
@@ -75,13 +79,19 @@ begin
   FLine := line;
 end;
 
+destructor TToken.Destroy;
+begin
+  FreeAndNil(self.FLiteral);
+  inherited Destroy;
+end;
+
 function TToken.ToString: string;
 begin
   { Original format }
   Result := Format('%s %s %s', [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)).Substring(2),
     self.FLexeme, ObjToStr(self.FLiteral)]);
-  { JSON }
-  (*
+
+  (* JSON
   Result := Format('{ tokenKind: %s, lexeme: "%s", literal: %s }',
     [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)),
     self.FLexeme, ObjToStr(self.FLiteral)]);

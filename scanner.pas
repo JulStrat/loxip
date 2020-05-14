@@ -13,7 +13,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections
-  , token;
+  , ptypes, token;
 
 type
 
@@ -27,7 +27,7 @@ type
 
     procedure ScanToken;
     procedure AddToken(tokenKind: TTokenKind); overload;
-    procedure AddToken(tokenKind: TTokenKind; literal: TObject); overload;
+    procedure AddToken(tokenKind: TTokenKind; literal: TLoxObject); overload;
 
     function IsAtEnd: boolean;
     function Advance: char;
@@ -50,11 +50,11 @@ type
 
 implementation
 
-uses lox, ptypes;
+uses lox;
 
 constructor TScanner.Create(src: string);
 begin
-  FTokens := TObjectList<TToken>.Create();
+  FTokens := TObjectList<TToken>.Create(true); (* Owns tokens *)
   FSource := src;
   FStart := Low(src);
   Fcurrent := Low(src);
@@ -84,7 +84,7 @@ begin
   AddToken(tokenKind, nil);
 end;
 
-procedure TScanner.AddToken(tokenKind: TTokenKind; literal: TObject);
+procedure TScanner.AddToken(tokenKind: TTokenKind; literal: TLoxObject);
 var
   txt: string;
 begin

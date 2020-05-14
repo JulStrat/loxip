@@ -21,7 +21,7 @@ type
   TEnvironment = class
   private
     FEnclosing: TEnvironment;
-    FValues: TDictionary<string, TObject>;
+    FValues: TObjectDictionary<string, TObject>;
   public
     constructor Create; overload;
     constructor Create(encl: TEnvironment); overload;
@@ -32,26 +32,31 @@ type
 
 implementation
 
-uses rterror;
+uses ptypes, rterror;
 
 constructor TEnvironment.Create;
 begin
   self.FEnclosing := nil;
-  FValues := TDictionary<string, TObject>.Create();
+  FValues := TObjectDictionary<string, TObject>.Create([doOwnsValues]);
 end;
 
 constructor TEnvironment.Create(encl: TEnvironment);
 begin
   self.FEnclosing := encl;
-  FValues := TDictionary<string, TObject>.Create();
+  FValues := TObjectDictionary<string, TObject>.Create([doOwnsValues]);
 end;
 
 function TEnvironment.Get(tok: TToken): TObject;
 var
   val: TObject;
 begin
+  //writeln('DICT - ', self.FValues.Count);
   if FValues.TryGetValue(tok.lexeme, val) then
+  begin
+    if val is TLoxObject then
+      val := TLoxObject(val).Clone;
     Exit(val);
+  end;
   if self.FEnclosing <> nil then
     Exit(self.FEnclosing.Get(tok));
   raise ERuntimeError.Create(tok, Format('Undefined variable ''%s''.', [tok.lexeme]));
@@ -63,6 +68,8 @@ var
 begin
   if FValues.TryGetValue(tok.lexeme, v) then
   begin
+    if val is TLoxObject then
+      val := TLoxObject(val).Clone;
     FValues.Items[tok.lexeme] := val;
     Exit;
   end;
@@ -76,7 +83,12 @@ begin
 end;
 
 procedure TEnvironment.Define(vname: string; val: TObject);
+var
+  pair: TPair<string, TObject>;
 begin
+  if val is TLoxObject then
+    val := TLoxObject(val).Clone;
+
   FValues.AddOrSetValue(vname, val);
 end;
 

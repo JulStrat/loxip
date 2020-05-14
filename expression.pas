@@ -10,6 +10,10 @@ unit expression;
 {$interfaces corba}
 {$endif}
 
+{$IFOPT D+}
+{$DEFINE DEBUG}
+{$ENDIF}
+
 interface
 
 uses
@@ -82,6 +86,7 @@ type
 
   TVariableExpression = class(TExpression)
   private
+    // TO DO Rename
     FVarName: TToken;
   public
     constructor Create(varName: TToken);
@@ -95,6 +100,7 @@ type
   TAssignmentExpression = class(TExpression)
   private
     FVarName: TToken;
+    // TO DO Rename
     FValue: TExpression;
   public
     constructor Create(varName: TToken; val: TExpression);
@@ -125,6 +131,7 @@ end;
 
 destructor TLiteralExpression.Destroy;
 begin
+  //FreeAndNil(self.FValue);
   inherited Destroy;
 end;
 
@@ -132,8 +139,10 @@ function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
 var
   msg: String;
 begin
+  {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting literal expression - %s', [self.ClassName, ObjToStr(FValue)]);
   Writeln(msg);
+  {$ENDIF}
   Result := ev.VisitLit(self);
 end;
 
@@ -145,6 +154,7 @@ end;
 
 destructor TUnaryExpression.Destroy;
 begin
+  //FreeAndNil(self.FOp);
   FreeAndNil(self.FRight);
   inherited Destroy;
 end;
@@ -153,8 +163,10 @@ function TUnaryExpression.Accept(ev: IExpressionVisitor): TObject;
 var
   msg: String;
 begin
+  {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting unary expression - %s', [self.ClassName, self.FOp.lexeme]);
   Writeln(msg);
+  {$ENDIF}
   Result := ev.VisitUn(self);
 end;
 
@@ -167,6 +179,7 @@ end;
 
 destructor TBinaryExpression.Destroy;
 begin
+  //FreeAndNil(self.FOp);
   FreeAndNil(self.FLeft);
   FreeAndNil(self.FRight);
   inherited Destroy;
@@ -176,8 +189,10 @@ function TBinaryExpression.Accept(ev: IExpressionVisitor): TObject;
 var
   msg: String;
 begin
+  {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting binary expression - %s', [self.ClassName, self.FOp.lexeme]);
   Writeln(msg);
+  {$ENDIF}
   Result := ev.VisitBin(self);
 end;
 
@@ -196,8 +211,10 @@ function TGroupingExpression.Accept(ev: IExpressionVisitor): TObject;
 var
   msg: String;
 begin
+  {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting grouping expression', [self.ClassName]);
   Writeln(msg);
+  {$ENDIF}
   Result := ev.VisitGroup(self);
 end;
 
@@ -208,7 +225,7 @@ end;
 
 destructor TVariableExpression.Destroy;
 begin
-  FreeAndNil(self.FVarName);
+  //FreeAndNil(self.FVarName);
   inherited Destroy;
 end;
 
@@ -216,8 +233,10 @@ function TVariableExpression.Accept(ev: IExpressionVisitor): TObject;
 var
   msg: String;
 begin
+  {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting variable expression - %s', [self.ClassName, self.FVarName.lexeme]);
   Writeln(msg);
+  {$ENDIF}
   Result := ev.VisitVar(self);
 end;
 
@@ -229,6 +248,8 @@ end;
 
 destructor TAssignmentExpression.Destroy;
 begin
+  //FreeAndNil(self.FVarName);
+  FreeAndNil(self.FValue);
   inherited Destroy;
 end;
 
@@ -236,10 +257,11 @@ function TAssignmentExpression.Accept(ev: IExpressionVisitor): TObject;
 var
   msg: String;
 begin
+  {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting assignment expression - %s', [self.ClassName, self.FVarName.lexeme]);
   Writeln(msg);
+  {$ENDIF}
   Result := ev.VisitAssign(self);
 end;
-
 
 end.

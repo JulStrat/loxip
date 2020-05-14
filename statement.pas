@@ -117,6 +117,7 @@ end;
 
 destructor TExpressionStatement.Destroy;
 begin
+  FreeAndNil(self.FExpr);
   inherited Destroy;
 end;
 
@@ -134,6 +135,7 @@ end;
 
 destructor TPrintStatement.Destroy;
 begin
+  FreeAndNil(self.FExpr);
   inherited Destroy;
 end;
 
@@ -157,6 +159,8 @@ end;
 
 destructor TVariableStatement.Destroy;
 begin
+  //FreeAndNil(self.FToken);
+  FreeAndNil(self.FExpr);
   inherited Destroy;
 end;
 

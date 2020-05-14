@@ -105,7 +105,7 @@ function TParser.Parse: TObjectList<TStatement>;
 var
   stm: TObjectList<TStatement>;
 begin
-  stm := TObjectList<TStatement>.Create;
+  stm := TObjectList<TStatement>.Create(true); // Owns statements
   while not self.IsAtEnd() do
     { stm.Add(self.Statement()); }
     stm.Add(self.Declaration());
@@ -183,7 +183,7 @@ begin
     case self.Peek.tokenKind of
       TTokenKind.tkCLASS, TTokenKind.tkFUN, TTokenKind.tkVAR,
       TTokenKind.tkFOR, TTokenKind.tkIF, TTokenKind.tkWHILE,
-      TTokenKind.tkPRINT, TTokenKind.tkRETURN:
+      TTokenKind.tkPRINT, TTokenKind.tkPRINTDOT, TTokenKind.tkRETURN:
         Exit();
     end;
 
@@ -371,7 +371,7 @@ begin
   self.Consume(TTokenKind.tkSEMICOLON, 'Expect '';'' after expression.');
   Result := TPrintStatement.Create(expr);
 end;
-{ TO DO RWR }
+
 function TParser.PrintDOTStatement: TStatement;
 var
   expr: TExpression;
@@ -394,7 +394,6 @@ begin
 
   self.Consume(TTokenKind.tkSEMICOLON, 'Expect '';'' after variable declaration.');
   Result := TVariableStatement.Create(tok, init);
-
 end;
 
 end.

@@ -14,6 +14,8 @@ type
   { TASTPrinter }
 
   TASTPrinter = class(IExpressionVisitor)
+  private
+    FRPN: boolean;
   public
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
@@ -21,7 +23,7 @@ type
     function VisitGroup(expr: TGroupingExpression): TObject;
     function VisitVar(expr: TVariableExpression): TObject;
     function VisitAssign(expr: TAssignmentExpression): TObject;
-    function Print(expr: TExpression): string;
+    function Print(expr: TExpression; rpn: boolean = false): string;
   end;
 
   { TASTDOTMaker }
@@ -132,7 +134,10 @@ var
   o: TLoxStr;
 begin
   o := TLoxStr(expr.right.Accept(self));
-  s := Format('(%s %s)', [expr.op.lexeme, o.Value]);
+  if self.FRPN then
+    s := Format('%s [unary]%s', [o.Value, expr.op.lexeme])
+  else
+    s := Format('(%s %s)', [expr.op.lexeme, o.Value]);
   FreeAndNil(o);
   Result := TLoxStr.Create(s);
 end;
@@ -144,7 +149,10 @@ var
 begin
   l := TLoxStr(expr.left.Accept(self));
   r := TLoxStr(expr.right.Accept(self));
-  s := Format('(%s %s %s)', [expr.op.lexeme, l.Value, r.Value]);
+  if self.FRPN then
+    s := Format('%s %s %s', [l.Value, r.Value, expr.op.lexeme])
+  else
+    s := Format('(%s %s %s)', [expr.op.lexeme, l.Value, r.Value]);
   FreeAndNil(l);
   FreeAndNil(r);
   Result := TLoxStr.Create(s);
@@ -156,7 +164,10 @@ var
   e: TLoxStr;
 begin
   e := TLoxStr(expr.expr.Accept(self));
-  s := Format('(group %s)', [e.Value]);
+  if self.FRPN then
+    s := Format('%s', [e.Value])
+  else
+    s := Format('(group %s)', [e.Value]);
   FreeAndNil(e);
   Result := TLoxStr.Create(s);
 end;
@@ -172,15 +183,19 @@ var
   r: TLoxStr;
 begin
   r := TLoxStr(expr.value.Accept(self));
-  s := Format('(assign %s %s)', [expr.varName.lexeme, r.Value]);
+  if self.FRPN then
+    s := Format('%s %s assign', [expr.varName.lexeme, r.Value])
+  else
+    s := Format('(assign %s %s)', [expr.varName.lexeme, r.Value]);
   FreeAndNil(r);
   Result := TLoxStr.Create(s);
 end;
 
-function TASTPrinter.Print(expr: TExpression): string;
+function TASTPrinter.Print(expr: TExpression; rpn: boolean = false): string;
 var
   o: TLoxStr;
 begin
+  self.FRPN := rpn;
   o := TLoxStr(expr.Accept(self));
   Result := o.Value;
   FreeAndNil(o);

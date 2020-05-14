@@ -4,6 +4,11 @@ unit interpreter;
 {$mode delphi}
 {$endif}
 
+{$IFOPT D+}
+{$DEFINE DEBUG}
+{$ENDIF}
+
+
 interface
 
 uses
@@ -22,6 +27,7 @@ type
     function Stringify(obj: TObject): string;
   public
     constructor Create;
+    destructor Destroy; override;
     { Expression visitor }
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
@@ -50,7 +56,9 @@ uses ptypes, lox, astutils;
 
 function TInterpreter.Evaluate(expr: TExpression): TObject;
 begin
-  //WriteLn(Format('[DEBUG] - Evaluating %s.', [expr.ClassName]));
+  {$IFDEF DEBUG}
+  WriteLn(Format('[DEBUG] (TInterpreter) Evaluating %s.', [expr.ClassName]));
+  {$ENDIF}
   Result := expr.Accept(self);
 end;
 
@@ -93,9 +101,15 @@ begin
   FEnvir := TEnvironment.Create;
 end;
 
+destructor TInterpreter.Destroy;
+begin
+  FreeAndNil(self.FEnvir);
+  inherited;
+end;
+
 function TInterpreter.VisitLit(expr: TLiteralExpression): TObject;
 begin
-  Result := expr.Value;
+  Result := TLoxObject(expr.Value).Clone();
 end;
 
 function TInterpreter.VisitUn(expr: TUnaryExpression): TObject;
@@ -142,10 +156,11 @@ begin
       if (left is TLoxNum) and (right is TLoxNum) then
         obj := TLoxNum.Create(TLoxNum(left).Value + TLoxNum(right).Value)
       else
-        if (left is TLoxStr) or (right is TLoxStr) then
-          obj := TLoxStr.Create(left.ToString() + right.ToString())
-        else
-          rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or either string.');
+      if (left is TLoxStr) or (right is TLoxStr) then
+        obj := TLoxStr.Create(left.ToString() + right.ToString())
+      else
+        rte := ERuntimeError.Create(expr.op,
+          'Operands must be numbers or either string.');
 
     TTokenKind.tkMINUS: { - }
       if (left is TLoxNum) and (right is TLoxNum) then
@@ -166,10 +181,11 @@ begin
         else
           rte := ERuntimeError.Create(expr.op, 'Division by zero.')
       else
-        if (left is TLoxStr) or (right is TLoxStr) then
-          obj := TLoxStr.Create(left.ToString + right.ToString)
-        else
-          rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or at least one - string.');
+      if (left is TLoxStr) or (right is TLoxStr) then
+        obj := TLoxStr.Create(left.ToString + right.ToString)
+      else
+        rte := ERuntimeError.Create(expr.op,
+          'Operands must be numbers or at least one - string.');
 
     TTokenKind.tkGREATER: { > }
       if (left is TLoxNum) and (right is TLoxNum) then
@@ -223,9 +239,9 @@ function TInterpreter.VisitAssign(expr: TAssignmentExpression): TObject;
 var
   obj: TObject;
 begin
-  obj := self.Evaluate(expr.value);
-  self.FEnvir.Assign(expr.varName, obj);;
-  Result := obj
+  obj := self.Evaluate(expr.Value);
+  self.FEnvir.Assign(expr.varName, obj);
+  Result := obj;
 end;
 
 { Statements }
@@ -235,25 +251,50 @@ begin
 end;
 
 procedure TInterpreter.VisitExprStm(stm: TExpressionStatement);
+var
+  r: TObject;
 begin
-  self.Evaluate(stm.expr);
+  r := self.Evaluate(stm.expr);
+  if r is TLoxObject then
+    FreeAndNil(r);
 end;
 
 procedure TInterpreter.VisitPrintStm(stm: TPrintStatement);
 var
   obj: TObject;
+  prn: TASTPrinter;
 begin
-  obj := self.Evaluate(stm.expr);
-  WriteLn(ObjToStr(obj));
+  obj := nil;
+  prn := nil;
+  try
+  {$IFDEF DEBUG}
+    prn := TASTPrinter.Create();
+    WriteLn('[DEBUG] (TASTPrinter) ' + prn.Print(stm.expr, False));
+    WriteLn('[DEBUG] (TASTPrinter RPN) ' + prn.Print(stm.expr, True));
+  {$ENDIF}
+    obj := self.Evaluate(stm.expr);
+    WriteLn(ObjToStr(obj));
+  finally
+    FreeAndNil(obj);
+    FreeAndNil(prn);
+  end;
 end;
 
 procedure TInterpreter.VisitPrintDOTStm(stm: TPrintDOTStatement);
 var
-  dot: TASTDOTMaker;
+  dot: TStringList;
+  dm: TASTDOTMaker;
 begin
-  dot := TASTDOTMaker.Create();
-  WriteLn(dot.Make(stm.expr).Text);
-  FreeAndNil(dot);
+  dot := nil;
+  dm := nil;
+  try
+    dm := TASTDOTMaker.Create();
+    dot := dm.Make(stm.expr);
+    WriteLn(dot.Text);
+  finally
+    FreeAndNil(dot);
+    FreeAndNil(dm);
+  end;
 end;
 
 procedure TInterpreter.VisitVarStm(stm: TVariableStatement);
@@ -264,6 +305,7 @@ begin
   if stm.expr <> nil then
     obj := self.Evaluate(stm.expr);
   self.FEnvir.Define(stm.token.lexeme, obj);
+  FreeAndNil(obj);
 end;
 
 procedure TInterpreter.Execute(stm: TStatement);
@@ -292,19 +334,14 @@ end;
 
 procedure TInterpreter.Interpret(stm: TObjectList<TStatement>);
 var
-  obj: TObject;
   s: TStatement;
 begin
   try
-    try
-      for s in stm do
-        self.Execute(s);
-    except
-      on e: ERunTimeError do
-        TLox.RunTimeError(e)
-    end;
-  finally
-    ;
+    for s in stm do
+      self.Execute(s);
+  except
+    on e: ERunTimeError do
+      TLox.RunTimeError(e)
   end;
 end;
 
