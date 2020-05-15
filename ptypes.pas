@@ -24,6 +24,17 @@ type
     property value: Boolean read FValue;
   end;
 
+  { TLoxIntNum }
+  TLoxIntNum = class(TLoxObject)
+    private
+    FValue: LongInt;
+    public
+    constructor Create(v: LongInt);
+    function Clone: TLoxObject; override;
+    function ToString: ansistring; override;
+    property value: LongInt read FValue;
+  end;
+
   { TLoxNum }
   TLoxNum = class(TLoxObject)
     private
@@ -33,7 +44,6 @@ type
     function Clone: TLoxObject; override;
     function ToString: ansistring; override;
     property value: Double read FValue;
-
   end;
 
   { TLoxStr }
@@ -51,7 +61,7 @@ function ObjToStr(obj: TObject): ansistring;
 
 implementation
 
-uses Math;
+// uses Math;
 
 constructor TLoxBool.Create(v: Boolean);
 begin
@@ -66,6 +76,21 @@ end;
 function TLoxBool.ToString: ansistring;
 begin
   Result := BoolToStr(FValue, true);
+end;
+
+constructor TLoxIntNum.Create(v: LongInt);
+begin
+  FValue := v;
+end;
+
+function TLoxIntNum.Clone: TLoxObject;
+begin
+  Result := TLoxIntNum.Create(self.FValue);
+end;
+
+function TLoxIntNum.ToString: ansistring;
+begin
+  Result := Format('%d', [self.FValue]);
 end;
 
 constructor TLoxNum.Create(v: Double);
@@ -95,7 +120,7 @@ end;
 
 function TLoxStr.ToString: ansistring;
 begin
-  Result := Format('%s', [FValue]);
+  Result := self.FValue; //Format('%s', [FValue]);
 end;
 
 function ObjToStr(obj: TObject): ansistring;

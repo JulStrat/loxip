@@ -107,11 +107,11 @@ type
     destructor Destroy; override;
     function Accept(ev: IExpressionVisitor): TObject; override;
     property varName: TToken read FVarName;
-    property value: TExpression read FValue;
+    property Value: TExpression read FValue;
   end;
 
   IExpressionVisitor = interface
-['{8A3D7767-D1C5-49F5-BC15-F6C975FBAC67}']
+    ['{8A3D7767-D1C5-49F5-BC15-F6C975FBAC67}']
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
@@ -122,7 +122,10 @@ type
 
 implementation
 
+{$IFDEF TRACE}
 uses ptypes;
+(* ObjToStr *)
+{$ENDIF}
 
 constructor TLiteralExpression.Create(v: TObject);
 begin
@@ -136,11 +139,14 @@ begin
 end;
 
 function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
 var
-  msg: String;
+  msg: string;
+{$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting literal expression - %s', [self.ClassName, ObjToStr(FValue)]);
+  msg := Format('[DEBUG] (%s) Accepting literal expression: %s',
+    [self.ClassName, ObjToStr(FValue)]);
   Writeln(msg);
   {$ENDIF}
   Result := ev.VisitLit(self);
@@ -160,11 +166,14 @@ begin
 end;
 
 function TUnaryExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
 var
-  msg: String;
+  msg: string;
+{$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting unary expression - %s', [self.ClassName, self.FOp.lexeme]);
+  msg := Format('[DEBUG] (%s) Accepting unary expression: %s',
+    [self.ClassName, self.FOp.lexeme]);
   Writeln(msg);
   {$ENDIF}
   Result := ev.VisitUn(self);
@@ -186,11 +195,14 @@ begin
 end;
 
 function TBinaryExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
 var
-  msg: String;
+  msg: string;
+{$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting binary expression - %s', [self.ClassName, self.FOp.lexeme]);
+  msg := Format('[DEBUG] (%s) Accepting binary expression: %s',
+    [self.ClassName, self.FOp.lexeme]);
   Writeln(msg);
   {$ENDIF}
   Result := ev.VisitBin(self);
@@ -208,8 +220,10 @@ begin
 end;
 
 function TGroupingExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
 var
-  msg: String;
+  msg: string;
+{$ENDIF}
 begin
   {$IFDEF TRACE}
   msg := Format('[DEBUG] (%s) Accepting grouping expression', [self.ClassName]);
@@ -230,11 +244,14 @@ begin
 end;
 
 function TVariableExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
 var
-  msg: String;
+  msg: string;
+{$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting variable expression - %s', [self.ClassName, self.FVarName.lexeme]);
+  msg := Format('[DEBUG] (%s) Accepting variable expression: %s',
+    [self.ClassName, self.FVarName.lexeme]);
   Writeln(msg);
   {$ENDIF}
   Result := ev.VisitVar(self);
@@ -254,11 +271,14 @@ begin
 end;
 
 function TAssignmentExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
 var
-  msg: String;
+  msg: string;
+{$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting assignment expression - %s', [self.ClassName, self.FVarName.lexeme]);
+  msg := Format('[DEBUG] (%s) Accepting assignment expression: %s',
+    [self.ClassName, self.FVarName.lexeme]);
   Writeln(msg);
   {$ENDIF}
   Result := ev.VisitAssign(self);

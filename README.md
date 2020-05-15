@@ -1,6 +1,6 @@
 # loxip
 
-loxip - Free Pascal interpreter implementation of Lox programming language by [Bob Nystrom](https://github.com/munificent).
+[Lox interpreter](http://www.craftinginterpreters.com/) written in Free Pascal.
 
 Work in progress.
 
@@ -42,7 +42,7 @@ Hello 2020 True
 ```   
 ## AST visualization
 
-Statement `printdot expression;` prints espression AST in [DOT format](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
+`printdot expression;` generates AST in [DOT format](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
 ```
 > printdot 1 + 8 * 89 - - 12;
 [DEBUG] (TBinaryExpression) Accepting binary expression - -
@@ -83,3 +83,7 @@ AST for expression `1 + 8 * 89 - - 12`
 ## Interpreter
 
 <img src="https://github.com/JulStrat/loxip/blob/devop/loxip.JPG">
+
+## Built With
+
+* [Lazarus](https://www.lazarus-ide.org/) - The professional Free Pascal RAD IDE.

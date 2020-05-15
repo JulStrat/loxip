@@ -53,7 +53,7 @@ type
     (* Statements rules *)
     { declaration : varDecl | statement }
     function Declaration: TStatement;
-    { statement : exprStmt | printStmt | printDotStm }
+    { statement : exprStmt | printStmt | printDotStm | block }
     function Statement: TStatement;
     { exprStmt : expression ";" }
     function ExprStatement: TStatement;
@@ -63,6 +63,8 @@ type
     function PrintDOTStatement: TStatement;
     { varDecl : "var" IDENTIFIER ( "=" expression )? ";" }
     function VarDeclaration: TStatement;
+    (* block: "{" declaration* "}" *)
+    function Block: TObjectList<TStatement>;
   public
     constructor Create(tokens: TObjectList<TToken>);
     { do job }
@@ -105,7 +107,7 @@ function TParser.Parse: TObjectList<TStatement>;
 var
   stm: TObjectList<TStatement>;
 begin
-  stm := TObjectList<TStatement>.Create(true); // Owns statements
+  stm := TObjectList<TStatement>.Create(True); // Owns statements
   while not self.IsAtEnd() do
     { stm.Add(self.Statement()); }
     stm.Add(self.Declaration());
@@ -348,10 +350,13 @@ begin
   if self.Match([TTokenKind.tkPRINT]) then
     Result := self.PrintStatement()
   else
-    if self.Match([TTokenKind.tkPRINTDOT]) then
-      Result := self.PrintDOTStatement()
-    else
-      Result := self.ExprStatement();
+  if self.Match([TTokenKind.tkPRINTDOT]) then
+    Result := self.PrintDOTStatement()
+  else
+  if self.Match([TTokenKind.tkLEFT_BRACE]) then
+    Result := TBlockStatement.Create(self.Block())
+  else
+    Result := self.ExprStatement();
 end;
 
 function TParser.ExprStatement: TStatement;
@@ -394,6 +399,20 @@ begin
 
   self.Consume(TTokenKind.tkSEMICOLON, 'Expect '';'' after variable declaration.');
   Result := TVariableStatement.Create(tok, init);
+end;
+
+function TParser.Block: TObjectList<TStatement>;
+var
+  bs: TObjectList<TStatement>;
+begin
+  bs := TObjectList<TStatement>.Create(True);
+
+  while (not self.IsAtEnd()) and (not self.Check(TTokenKind.tkRIGHT_BRACE)) do
+    bs.Add(self.Declaration());
+
+  self.Consume(TTokenKind.tkRIGHT_BRACE, 'Expect ''}'' after block.');
+
+  Result := bs;
 end;
 
 end.

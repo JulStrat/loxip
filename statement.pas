@@ -76,17 +76,17 @@ type
     constructor Create(tok: TToken; expr: TExpression);
     destructor Destroy; override;
     procedure Accept(ev: IStatementVisitor); override;
-    property token: TToken read FToken;	
+    property token: TToken read FToken;
     property expr: TExpression read FExpr;
   end;
 
   IStatementVisitor = interface
-['{CB339243-B3DD-4E3A-8E2C-A25503D1EF04}']
-    procedure VisitBlockStm(stm: TBlockStatement);  
+    ['{CB339243-B3DD-4E3A-8E2C-A25503D1EF04}']
+    procedure VisitBlockStm(stm: TBlockStatement);
     procedure VisitExprStm(stm: TExpressionStatement);
     procedure VisitPrintStm(stm: TPrintStatement);
     procedure VisitPrintDOTStm(stm: TPrintDOTStatement);
-    procedure VisitVarStm(stm: TVariableStatement);  	
+    procedure VisitVarStm(stm: TVariableStatement);
   end;
 
 implementation
@@ -100,6 +100,7 @@ end;
 
 destructor TBlockStatement.Destroy;
 begin
+  FreeAndNil(self.FBlock);
   inherited Destroy;
 end;
 

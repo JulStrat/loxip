@@ -43,6 +43,7 @@ type
     procedure VisitVarStm(stm: TVariableStatement);
     { helper }
     procedure Execute(stm: TStatement);
+    procedure EcecuteBlock(block: TObjectList<TStatement>; envir: TEnvironment);
     { do job }
     { procedure Interpret(expr: TExpression); }
     procedure Interpret(stm: TObjectList<TStatement>);
@@ -109,7 +110,10 @@ end;
 
 function TInterpreter.VisitLit(expr: TLiteralExpression): TObject;
 begin
-  Result := TLoxObject(expr.Value).Clone();
+  if expr.Value is TLoxObject then
+    Result := TLoxObject(expr.Value).Clone()
+  else
+    Result := expr.Value; { nil ? }
 end;
 
 function TInterpreter.VisitUn(expr: TUnaryExpression): TObject;
@@ -246,8 +250,16 @@ end;
 
 { Statements }
 procedure TInterpreter.VisitBlockStm(stm: TBlockStatement);
+var
+  envir: TEnvironment;
 begin
-
+  envir := nil;
+  try
+    envir := TEnvironment.Create(self.FEnvir);
+    self.EcecuteBlock(stm.block, envir);
+  finally
+    FreeAndNil(envir);
+  end;
 end;
 
 procedure TInterpreter.VisitExprStm(stm: TExpressionStatement);
@@ -310,7 +322,26 @@ end;
 
 procedure TInterpreter.Execute(stm: TStatement);
 begin
+  {$IFDEF DEBUG}
+  WriteLn(Format('[DEBUG] (TInterpreter) Executing %s.', [stm.ClassName]));
+  {$ENDIF}
   stm.Accept(self);
+end;
+
+procedure TInterpreter.EcecuteBlock(block: TObjectList<TStatement>; envir: TEnvironment);
+var
+  prev: TEnvironment;
+  stm: TStatement;
+begin
+  prev := self.FEnvir;
+
+  try
+    self.FEnvir := envir;
+    for stm in block do
+      self.Execute(stm);
+  finally
+    self.FEnvir := prev;
+  end;
 end;
 
 {
