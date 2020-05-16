@@ -14,6 +14,8 @@ unit expression;
 {$DEFINE DEBUG}
 {$ENDIF}
 
+{$DEFINE TRACE}
+
 interface
 
 uses
@@ -38,7 +40,7 @@ type
     constructor Create(v: TObject);
     destructor Destroy; override;
     function Accept(ev: IExpressionVisitor): TObject; override;
-    property Value: TObject read FValue;
+    property value: TObject read FValue;
   end;
 
   { TUnaryExpression }
@@ -107,7 +109,7 @@ type
     destructor Destroy; override;
     function Accept(ev: IExpressionVisitor): TObject; override;
     property varName: TToken read FVarName;
-    property Value: TExpression read FValue;
+    property value: TExpression read FValue;
   end;
 
   IExpressionVisitor = interface
@@ -140,15 +142,15 @@ end;
 
 function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
 {$IFDEF TRACE}
-var
-  msg: string;
+const
+  __currMethodName = 'TLiteralExpression.Accept';
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting literal expression: %s',
-    [self.ClassName, ObjToStr(FValue)]);
-  Writeln(msg);
+  Writeln(Format('[DEBUG] (%s) Accepting literal expression: %s',
+    [__currMethodName, ObjToStr(FValue)]));
   {$ENDIF}
+  // CLONE HERE ?
   Result := ev.VisitLit(self);
 end;
 
@@ -167,14 +169,13 @@ end;
 
 function TUnaryExpression.Accept(ev: IExpressionVisitor): TObject;
 {$IFDEF TRACE}
-var
-  msg: string;
+const
+  __currMethodName = 'TUnaryExpression.Accept';
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting unary expression: %s',
-    [self.ClassName, self.FOp.lexeme]);
-  Writeln(msg);
+  Writeln(Format('[DEBUG] (%s) Accepting unary expression: %s',
+    [__currMethodName, self.FOp.lexeme]));
   {$ENDIF}
   Result := ev.VisitUn(self);
 end;
@@ -196,14 +197,13 @@ end;
 
 function TBinaryExpression.Accept(ev: IExpressionVisitor): TObject;
 {$IFDEF TRACE}
-var
-  msg: string;
+const
+  __currMethodName = 'TBinaryExpression.Accept';
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting binary expression: %s',
-    [self.ClassName, self.FOp.lexeme]);
-  Writeln(msg);
+  WriteLn(Format('[DEBUG] (%s) Accepting binary expression: %s',
+    [__currMethodName, self.FOp.lexeme]));
   {$ENDIF}
   Result := ev.VisitBin(self);
 end;
@@ -221,13 +221,12 @@ end;
 
 function TGroupingExpression.Accept(ev: IExpressionVisitor): TObject;
 {$IFDEF TRACE}
-var
-  msg: string;
+const
+  __currMethodName = 'TGroupingExpression.Accept';
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting grouping expression', [self.ClassName]);
-  Writeln(msg);
+  WriteLn(Format('[DEBUG] (%s) Accepting grouping expression', [__currMethodName]));
   {$ENDIF}
   Result := ev.VisitGroup(self);
 end;
@@ -245,14 +244,13 @@ end;
 
 function TVariableExpression.Accept(ev: IExpressionVisitor): TObject;
 {$IFDEF TRACE}
-var
-  msg: string;
+const
+  __currMethodName = 'TVariableExpression.Accept';
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting variable expression: %s',
-    [self.ClassName, self.FVarName.lexeme]);
-  Writeln(msg);
+  WriteLn(Format('[DEBUG] (%s) Accepting variable expression: %s',
+    [__currMethodName, self.FVarName.lexeme]));
   {$ENDIF}
   Result := ev.VisitVar(self);
 end;
@@ -272,14 +270,13 @@ end;
 
 function TAssignmentExpression.Accept(ev: IExpressionVisitor): TObject;
 {$IFDEF TRACE}
-var
-  msg: string;
+const
+  __currMethodName = 'TAssignmentExpression.Accept';
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  msg := Format('[DEBUG] (%s) Accepting assignment expression: %s',
-    [self.ClassName, self.FVarName.lexeme]);
-  Writeln(msg);
+  WriteLn(Format('[DEBUG] (%s) Accepting assignment expression: %s',
+    [__currMethodName, self.FVarName.lexeme]));
   {$ENDIF}
   Result := ev.VisitAssign(self);
 end;

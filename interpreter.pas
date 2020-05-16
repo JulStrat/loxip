@@ -57,7 +57,7 @@ uses ptypes, lox, astutils;
 
 function TInterpreter.Evaluate(expr: TExpression): TObject;
 begin
-  {$IFDEF DEBUG}
+  {$IFDEF TRACE}
   WriteLn(Format('[DEBUG] (TInterpreter) Evaluating %s.', [expr.ClassName]));
   {$ENDIF}
   Result := expr.Accept(self);
@@ -195,25 +195,37 @@ begin
       if (left is TLoxNum) and (right is TLoxNum) then
         obj := TLoxBool.Create(TLoxNum(left).Value > TLoxNum(right).Value)
       else
-        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
+      if (left is TLoxStr) and (right is TLoxStr) then
+        obj := TLoxBool.Create(TLoxStr(left).Value > TLoxStr(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkGREATER_EQUAL: { >= }
       if (left is TLoxNum) and (right is TLoxNum) then
         obj := TLoxBool.Create(TLoxNum(left).Value >= TLoxNum(right).Value)
       else
-        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
+      if (left is TLoxStr) and (right is TLoxStr) then
+        obj := TLoxBool.Create(TLoxStr(left).Value >= TLoxStr(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkLESS: { < }
       if (left is TLoxNum) and (right is TLoxNum) then
         obj := TLoxBool.Create(TLoxNum(left).Value < TLoxNum(right).Value)
       else
-        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
+      if (left is TLoxStr) and (right is TLoxStr) then
+        obj := TLoxBool.Create(TLoxStr(left).Value < TLoxStr(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkLESS_EQUAL: { <= }
       if (left is TLoxNum) and (right is TLoxNum) then
         obj := TLoxBool.Create(TLoxNum(left).Value <= TLoxNum(right).Value)
       else
-        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
+      if (left is TLoxStr) and (right is TLoxStr) then
+        obj := TLoxBool.Create(TLoxStr(left).Value <= TLoxStr(right).Value)
+      else
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkEQUAL_EQUAL: { == }
       obj := TLoxBool.Create(self.IsEqual(left, right));
@@ -322,7 +334,7 @@ end;
 
 procedure TInterpreter.Execute(stm: TStatement);
 begin
-  {$IFDEF DEBUG}
+  {$IFDEF TRACE}
   WriteLn(Format('[DEBUG] (TInterpreter) Executing %s.', [stm.ClassName]));
   {$ENDIF}
   stm.Accept(self);

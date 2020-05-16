@@ -25,6 +25,7 @@ type
   public
     constructor Create; overload;
     constructor Create(encl: TEnvironment); overload;
+    destructor Destroy; override;
     function Get(tok: TToken): TObject;
     procedure Assign(tok: TToken; val: TObject);
     procedure Define(vname: string; val: TObject);
@@ -44,6 +45,12 @@ constructor TEnvironment.Create(encl: TEnvironment);
 begin
   self.FEnclosing := encl;
   FValues := TObjectDictionary<string, TObject>.Create([doOwnsValues]);
+end;
+
+destructor TEnvironment.Destroy;
+begin
+  FreeAndNil(self.FValues);
+  inherited Destroy;
 end;
 
 function TEnvironment.Get(tok: TToken): TObject;

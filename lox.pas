@@ -47,7 +47,9 @@ var
   counter: integer; // loop counter
   benchStart, benchEnd: QWord;
 begin
-  //source := 'var x = 101.1; var y = 1000001.1; var z; z = x * x * x * x; print z;';
+  { TEST }
+  // source := 'var x = 101.1; var y = 1000001.1; var z; z = x * x * x * x * x * x * x * x; // print z;';
+  { TEST }
   scanner := TScanner.Create(Source);
   tokens := scanner.ScanTokens();
 
@@ -67,7 +69,9 @@ begin
   if hadError then
      Exit();
   benchStart := GetTickCount64();
-  //for counter := 1 to 20 do
+  { TEST }
+  // for counter := 1 to 100000 do
+  { TEST }
   inter.Interpret(stm);
   benchEnd := GetTickCount64();
   WriteLn(Format('Tick count - %d.', [benchEnd - benchStart]));

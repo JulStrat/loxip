@@ -17,6 +17,21 @@ Work in progress.
 
 ### Chapter 7.Evaluating Expressions
 
+1. String comparison.
+```
+> print "abd" > "aba";
+[DEBUG] (TBinaryExpression.Accept) Accepting binary expression: >
+[DEBUG] (TLiteralExpression.Accept) Accepting literal expression: abd
+[DEBUG] (TLiteralExpression.Accept) Accepting literal expression: aba
+True
+Tick count - 0.
+> print "abd" < "aba";
+[DEBUG] (TBinaryExpression.Accept) Accepting binary expression: <
+[DEBUG] (TLiteralExpression.Accept) Accepting literal expression: abd
+[DEBUG] (TLiteralExpression.Accept) Accepting literal expression: aba
+False
+Tick count - 0.
+```
 2. Define `+` such that if either operand is a string, 
 the other is converted to a string and the results are then concatenated. 
 ```
