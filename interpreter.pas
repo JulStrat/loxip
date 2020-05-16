@@ -122,6 +122,7 @@ var
   obj: TObject;
   rte: ERunTimeError;
 begin
+  right := nil;
   obj := nil;
   rte := nil;
   right := self.Evaluate(expr.right);
@@ -149,6 +150,8 @@ var
   obj: TObject;
   rte: ERunTimeError;
 begin
+  left := nil;
+  right := nil;
   obj := nil;
   rte := nil;
 
@@ -185,11 +188,7 @@ begin
         else
           rte := ERuntimeError.Create(expr.op, 'Division by zero.')
       else
-      if (left is TLoxStr) or (right is TLoxStr) then
-        obj := TLoxStr.Create(left.ToString + right.ToString)
-      else
-        rte := ERuntimeError.Create(expr.op,
-          'Operands must be numbers or at least one - string.');
+        rte := ERuntimeError.Create(expr.op, 'Operands must be numbers.');
 
     TTokenKind.tkGREATER: { > }
       if (left is TLoxNum) and (right is TLoxNum) then
@@ -199,7 +198,7 @@ begin
         obj := TLoxBool.Create(TLoxStr(left).Value > TLoxStr(right).Value)
       else
         rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
-
+    { TO DO Add bool comparison Rewrite comp proc }
     TTokenKind.tkGREATER_EQUAL: { >= }
       if (left is TLoxNum) and (right is TLoxNum) then
         obj := TLoxBool.Create(TLoxNum(left).Value >= TLoxNum(right).Value)
