@@ -30,6 +30,7 @@ type
     destructor Destroy; override;
     { Expression visitor }
     function VisitLit(expr: TLiteralExpression): TObject;
+    function VisitLogic(expr: TLogicalExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
@@ -38,6 +39,8 @@ type
     { Statement visitor }
     procedure VisitBlockStm(stm: TBlockStatement);
     procedure VisitExprStm(stm: TExpressionStatement);
+    procedure VisitIfStm(stm: TIfStatement);
+    procedure VisitWhileStm(stm: TWhileStatement);
     procedure VisitPrintStm(stm: TPrintStatement);
     procedure VisitPrintDOTStm(stm: TPrintDOTStatement);
     procedure VisitVarStm(stm: TVariableStatement);
@@ -77,19 +80,28 @@ function TInterpreter.IsEqual(left, right: TObject): boolean;
 begin
   if (left = nil) and (right = nil) then
     Exit(True);
-  if (left = nil) or (right = nil) then
+  if left = nil then
     Exit(False);
-  if left.ClassType <> right.ClassType then
-    Exit(False);
-  if left.ClassType = TLoxBool then
-    Exit(TLoxBool(left).Value = TLoxBool(right).Value);
-  if left.ClassType = TLoxNum then
-    Exit(TLoxNum(left).Value = TLoxNum(right).Value);
-  if left.ClassType = TLoxStr then
-    Exit(TLoxStr(left).Value = TLoxStr(right).Value);
+
+  if left is TLoxBool then
+    if right is TLoxBool then
+      Exit(TLoxBool(left).Value = TLoxBool(right).Value)
+    else
+      Exit(False);
+
+  if left is TLoxNum then
+    if right is TLoxNum then
+      Exit(TLoxNum(left).Value = TLoxNum(right).Value)
+    else
+      Exit(False);
+
+  if left is TLoxStr then
+    if right is TLoxStr then
+      Exit(TLoxStr(left).Value = TLoxStr(right).Value)
+    else
+      Exit(False);
 
   Result := left.Equals(right);
-
 end;
 
 function TInterpreter.Stringify(obj: TObject): string;
@@ -114,6 +126,26 @@ begin
     Result := TLoxObject(expr.Value).Clone()
   else
     Result := expr.Value; { nil ? }
+end;
+
+function TInterpreter.VisitLogic(expr: TLogicalExpression): TObject;
+var
+  left: TObject;
+begin
+  left := nil;
+  left := self.Evaluate(expr.left);
+
+  case expr.op.tokenKind of
+    TTokenKind.tkOR:
+      if self.IsTruthy(left) then
+        Exit(left);
+    TTokenKind.tkAND:
+      if not self.IsTruthy(left) then
+        Exit(left);
+  end;
+
+  FreeAndNil(left);
+  Result := self.Evaluate(expr.right);
 end;
 
 function TInterpreter.VisitUn(expr: TUnaryExpression): TObject;
@@ -277,9 +309,32 @@ procedure TInterpreter.VisitExprStm(stm: TExpressionStatement);
 var
   r: TObject;
 begin
+  r := nil;
   r := self.Evaluate(stm.expr);
-  if r is TLoxObject then
-    FreeAndNil(r);
+  FreeAndNil(r);
+end;
+
+procedure TInterpreter.VisitIfStm(stm: TIfStatement);
+begin
+  if self.IsTruthy(self.Evaluate(stm.cond)) then
+    self.Execute(stm.thenStm)
+  else
+    if stm.elseStm <> nil then
+      self.Execute(stm.elseStm);
+end;
+
+procedure TInterpreter.VisitWhileStm(stm: TWhileStatement);
+var
+  obj: TObject;
+begin
+  obj := self.Evaluate(stm.cond);
+  while self.IsTruthy(obj) do
+  begin
+    self.Execute(stm.body);
+    FreeAndNil(obj);
+    obj := self.Evaluate(stm.cond);
+  end;
+  FreeAndNil(obj)
 end;
 
 procedure TInterpreter.VisitPrintStm(stm: TPrintStatement);

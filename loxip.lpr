@@ -1,5 +1,11 @@
 program loxip;
 
+{$ifdef FPC}
+{$mode delphi}
+{$endif}
+
+{$apptype console}
+
 uses
   Classes, SysUtils,
   lox;

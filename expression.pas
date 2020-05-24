@@ -11,10 +11,10 @@ unit expression;
 {$endif}
 
 {$IFOPT D+}
-{$DEFINE DEBUG}
+//{$DEFINE DEBUG}
 {$ENDIF}
 
-{$DEFINE TRACE}
+//{$DEFINE TRACE}
 
 interface
 
@@ -72,6 +72,13 @@ type
     property right: TExpression read FRight;
   end;
 
+  { TLogicalExpression }
+
+  TLogicalExpression = class(TBinaryExpression)
+  public
+    function Accept(ev: IExpressionVisitor): TObject; override;
+  end;
+
   { TGroupingExpression }
 
   TGroupingExpression = class(TExpression)
@@ -117,6 +124,7 @@ type
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
+    function VisitLogic(expr: TLogicalExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
     function VisitVar(expr: TVariableExpression): TObject;
     function VisitAssign(expr: TAssignmentExpression): TObject;
@@ -153,7 +161,20 @@ begin
   // CLONE HERE ?
   Result := ev.VisitLit(self);
 end;
-
+(*
+function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
+const
+  __currMethodName = 'TLiteralExpression.Accept';
+{$ENDIF}
+begin
+  {$IFDEF TRACE}
+  WriteLn(Format('[DEBUG] (%s) Accepting literal expression: %s',
+    [__currMethodName, self.FOp.lexeme]));
+  {$ENDIF}
+  Result := ev.VisitBin(self);
+end;
+*)
 constructor TUnaryExpression.Create(op: TToken; right: TExpression);
 begin
   self.FOp := op;
@@ -206,6 +227,19 @@ begin
     [__currMethodName, self.FOp.lexeme]));
   {$ENDIF}
   Result := ev.VisitBin(self);
+end;
+
+function TLogicalExpression.Accept(ev: IExpressionVisitor): TObject;
+{$IFDEF TRACE}
+const
+  __currMethodName = 'TLogicalExpression.Accept';
+{$ENDIF}
+begin
+  {$IFDEF TRACE}
+  WriteLn(Format('[DEBUG] (%s) Accepting logical expression: %s',
+    [__currMethodName, self.FOp.lexeme]));
+  {$ENDIF}
+  Result := ev.VisitLogic(self);
 end;
 
 constructor TGroupingExpression.Create(expr: TExpression);

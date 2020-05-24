@@ -49,6 +49,10 @@ var
 begin
   { TEST }
   // source := 'var x = 101.1; var y = 1000001.1; var z; z = x * x * x * x * x * x * x * x; // print z;';
+  // WHILE statement test Fib
+  source := 'var a=0;var b=1;var c=0; while (c<30) {if (c>=0) {print c+": "+a;} var temp=a;a=b;b=temp+b;c=c+1;}';
+  // FOR statement test
+  //csource := 'for (var i=0; i<=100; i=i+1) { if (i>=0) print i+": "+i*i; }';
   { TEST }
   scanner := TScanner.Create(Source);
   tokens := scanner.ScanTokens();

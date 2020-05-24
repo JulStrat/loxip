@@ -20,6 +20,7 @@ type
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
+    function VisitLogic(expr: TLogicalExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
     function VisitVar(expr: TVariableExpression): TObject;
     function VisitAssign(expr: TAssignmentExpression): TObject;
@@ -36,6 +37,7 @@ type
     function VisitLit(expr: TLiteralExpression): TObject;
     function VisitUn(expr: TUnaryExpression): TObject;
     function VisitBin(expr: TBinaryExpression): TObject;
+    function VisitLogic(expr: TLogicalExpression): TObject;
     function VisitGroup(expr: TGroupingExpression): TObject;
     function VisitVar(expr: TVariableExpression): TObject;
     function VisitAssign(expr: TAssignmentExpression): TObject;
@@ -74,6 +76,11 @@ begin
   Inc(self.FNodeNum);
   self.FDOT.Add(Format('%d -> %d', [integer(expr.right.Accept(self)),
     integer(Result)]));
+end;
+
+function TASTDOTMaker.VisitLogic(expr: TLogicalExpression): TObject;
+begin
+  Result := self.VisitBin(expr);
 end;
 
 function TASTDOTMaker.VisitGroup(expr: TGroupingExpression): TObject;
@@ -156,6 +163,11 @@ begin
   FreeAndNil(l);
   FreeAndNil(r);
   Result := TLoxStr.Create(s);
+end;
+
+function TASTPrinter.VisitLogic(expr: TLogicalExpression): TObject;
+begin
+  Result := self.VisitBin(expr);
 end;
 
 function TASTPrinter.VisitGroup(expr: TGroupingExpression): TObject;
