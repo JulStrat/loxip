@@ -11,7 +11,7 @@ unit expression;
 {$endif}
 
 {$IFOPT D+}
-//{$DEFINE DEBUG}
+{$DEFINE DEBUG}
 {$ENDIF}
 
 //{$DEFINE TRACE}
@@ -155,26 +155,13 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  Writeln(Format('[DEBUG] (%s) Accepting literal expression: %s',
+  Writeln(Format('[TRACE] (%s) Accepting literal expression: %s',
     [__currMethodName, ObjToStr(FValue)]));
   {$ENDIF}
   // CLONE HERE ?
   Result := ev.VisitLit(self);
 end;
-(*
-function TLiteralExpression.Accept(ev: IExpressionVisitor): TObject;
-{$IFDEF TRACE}
-const
-  __currMethodName = 'TLiteralExpression.Accept';
-{$ENDIF}
-begin
-  {$IFDEF TRACE}
-  WriteLn(Format('[DEBUG] (%s) Accepting literal expression: %s',
-    [__currMethodName, self.FOp.lexeme]));
-  {$ENDIF}
-  Result := ev.VisitBin(self);
-end;
-*)
+
 constructor TUnaryExpression.Create(op: TToken; right: TExpression);
 begin
   self.FOp := op;
@@ -195,7 +182,7 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  Writeln(Format('[DEBUG] (%s) Accepting unary expression: %s',
+  Writeln(Format('[TRACE] (%s) Accepting unary expression: %s',
     [__currMethodName, self.FOp.lexeme]));
   {$ENDIF}
   Result := ev.VisitUn(self);
@@ -223,7 +210,7 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  WriteLn(Format('[DEBUG] (%s) Accepting binary expression: %s',
+  WriteLn(Format('[TRACE] (%s) Accepting binary expression: %s',
     [__currMethodName, self.FOp.lexeme]));
   {$ENDIF}
   Result := ev.VisitBin(self);
@@ -236,7 +223,7 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  WriteLn(Format('[DEBUG] (%s) Accepting logical expression: %s',
+  WriteLn(Format('[TRACE] (%s) Accepting logical expression: %s',
     [__currMethodName, self.FOp.lexeme]));
   {$ENDIF}
   Result := ev.VisitLogic(self);
@@ -260,7 +247,7 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  WriteLn(Format('[DEBUG] (%s) Accepting grouping expression', [__currMethodName]));
+  WriteLn(Format('[TRACE] (%s) Accepting grouping expression', [__currMethodName]));
   {$ENDIF}
   Result := ev.VisitGroup(self);
 end;
@@ -283,7 +270,7 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  WriteLn(Format('[DEBUG] (%s) Accepting variable expression: %s',
+  WriteLn(Format('[TRACE] (%s) Accepting variable expression: %s',
     [__currMethodName, self.FVarName.lexeme]));
   {$ENDIF}
   Result := ev.VisitVar(self);
@@ -309,7 +296,7 @@ const
 {$ENDIF}
 begin
   {$IFDEF TRACE}
-  WriteLn(Format('[DEBUG] (%s) Accepting assignment expression: %s',
+  WriteLn(Format('[TRACE] (%s) Accepting assignment expression: %s',
     [__currMethodName, self.FVarName.lexeme]));
   {$ENDIF}
   Result := ev.VisitAssign(self);

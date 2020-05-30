@@ -17,7 +17,7 @@ uses
 
 type
 
-  TScanner = class
+  TScanner = class(TObject)
   private
     FSource: string;
     FTokens: TObjectList<TToken>;
@@ -26,14 +26,12 @@ type
     FLine: integer;
 
     procedure ScanToken;
-    procedure AddToken(tokenKind: TTokenKind); overload;
-    procedure AddToken(tokenKind: TTokenKind; literal: TLoxObject); overload;
+    procedure AddToken(tokenKind: TTokenKind; literal: TLoxObject = nil);
 
-    function IsAtEnd: boolean;
     function Advance: char;
-    function Match(expect: char): boolean;
     function Peek: char;
     function PeekNext: char;
+    function Match(expect: char): boolean;
 
     procedure ReadString;
     procedure ReadNumber;
@@ -42,55 +40,16 @@ type
     function IsDigit(c: char): boolean;
     function IsAlpha(c: char): boolean;
     function IsAlphaNumeric(c: char): boolean;
+    function IsAtEnd: boolean;
   public
     constructor Create(src: string);
-    function ScanTokens: TObjectList<TToken>;
     destructor Destroy; override;
+    function ScanTokens: TObjectList<TToken>;
   end;
 
 implementation
 
 uses lox;
-
-constructor TScanner.Create(src: string);
-begin
-  FTokens := TObjectList<TToken>.Create(true); (* Owns tokens *)
-  FSource := src;
-  FStart := Low(src);
-  Fcurrent := Low(src);
-  FLine := 1;
-end;
-
-destructor TScanner.Destroy;
-begin
-  //FTokens.Free();
-  inherited;
-end;
-
-function TScanner.IsAtEnd: boolean;
-begin
-  //Result := FCurrent > FSource.Length;
-  Result := FCurrent > High(FSource);
-end;
-
-function TScanner.Advance: char;
-begin
-  Result := FSource[FCurrent];
-  Inc(FCurrent);
-end;
-
-procedure TScanner.AddToken(tokenKind: TTokenKind);
-begin
-  AddToken(tokenKind, nil);
-end;
-
-procedure TScanner.AddToken(tokenKind: TTokenKind; literal: TLoxObject);
-var
-  txt: string;
-begin
-  txt := System.Copy(FSource, FStart, FCurrent - FStart);
-  FTokens.Add(TToken.Create(tokenKind, txt, literal, FLine));
-end;
 
 procedure TScanner.ScanToken;
 var
@@ -136,7 +95,7 @@ begin
         AddToken(TTokenKind.tkSLASH);
     end;
     ' ', #13, #9: ;
-    #10: Inc(FLine);
+    #10: Inc(FLine); (* sLineBreak ? *)
     '"': ReadString();
     '0'..'9': ReadNumber();
     'a'..'z', 'A'..'Z', '_': ReadIdentifier();
@@ -146,29 +105,45 @@ begin
 
 end;
 
-procedure TScanner.ReadIdentifier;
+procedure TScanner.AddToken(tokenKind: TTokenKind; literal: TLoxObject = nil);
 var
   txt: string;
-  tk: TTokenKind;
 begin
-  while IsAlphaNumeric(Peek()) do
-    Advance();
-
   txt := System.Copy(FSource, FStart, FCurrent - FStart);
-  if not loxKeywords.TryGetValue(txt, tk) then
-    tk := TTokenKind.tkIDENTIFIER;
-
-  AddToken(tk);
+  FTokens.Add(TToken.Create(tokenKind, txt, literal, FLine));
 end;
 
-function TScanner.IsAlphaNumeric(c: char): boolean;
+function TScanner.Advance: char;
 begin
-  Result := isAlpha(c) or isDigit(c);
+  Result := FSource[FCurrent];
+  Inc(FCurrent);
 end;
 
-function TScanner.IsAlpha(c: char): boolean;
+function TScanner.Peek: char;
 begin
-  Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or (c = '_');
+  if not isAtEnd() then
+    Result := FSource[FCurrent]
+  else
+    Result := #0;
+end;
+
+function TScanner.PeekNext: char;
+begin
+  if (FCurrent + 1) <= High(FSource) then
+    Result := FSource[FCurrent + 1]
+  else
+    Result := #0;
+end;
+
+function TScanner.Match(expect: char): boolean;
+begin
+  if IsAtEnd() then
+    Exit(False);
+  if FSource[FCurrent] <> expect then
+    Exit(False);
+
+  Inc(FCurrent);
+  Result := True;
 end;
 
 function TScanner.IsDigit(c: char): boolean;
@@ -176,20 +151,20 @@ begin
   Result := (c >= '0') and (c <= '9');
 end;
 
-procedure TScanner.ReadNumber;
+function TScanner.IsAlpha(c: char): boolean;
 begin
-  while IsDigit(Peek()) do
-    Advance();
+  Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or (c = '_');
+end;
 
-  if (Peek() = '.') and isDigit(PeekNext()) then
-  begin
-    Advance();
-    while IsDigit(Peek()) do
-      Advance();
-  end;
+function TScanner.IsAlphaNumeric(c: char): boolean;
+begin
+  Result := isAlpha(c) or isDigit(c);
+end;
 
-  AddToken(TTokenKind.tkNUMBER,
-    TLoxNum.Create(StrToFloat(Copy(FSource, FStart, FCurrent - FStart))));
+function TScanner.IsAtEnd: boolean;
+begin
+  //Result := FCurrent > FSource.Length;
+  Result := FCurrent > High(FSource);
 end;
 
 procedure TScanner.ReadString;
@@ -212,31 +187,50 @@ begin
     TLoxStr.Create(Copy(FSource, FStart + 1, FCurrent - FStart - 2)));
 end;
 
-function TScanner.Peek: char;
+procedure TScanner.ReadNumber;
 begin
-  if isAtEnd() then
-    Result := #0
-  else
-    Result := FSource[FCurrent];
+  while IsDigit(Peek()) do
+    Advance();
+
+  if (Peek() = '.') and isDigit(PeekNext()) then
+  begin
+    Advance();
+    while IsDigit(Peek()) do
+      Advance();
+  end;
+
+  AddToken(TTokenKind.tkNUMBER,
+    TLoxNum.Create(StrToFloat(Copy(FSource, FStart, FCurrent - FStart))));
 end;
 
-function TScanner.PeekNext: char;
+procedure TScanner.ReadIdentifier;
+var
+  txt: string;
+  tk: TTokenKind;
 begin
-  if (FCurrent + 1) > High(FSource) then
-    Result := #0
-  else
-    Result := FSource[FCurrent + 1];
+  while IsAlphaNumeric(Peek()) do
+    Advance();
+
+  txt := System.Copy(FSource, FStart, FCurrent - FStart);
+  if not loxKeywords.TryGetValue(txt, tk) then
+    tk := TTokenKind.tkIDENTIFIER;
+
+  AddToken(tk);
 end;
 
-function TScanner.Match(expect: char): boolean;
+(*** PUBLIC METHODS ***)
+constructor TScanner.Create(src: string);
 begin
-  if IsAtEnd() then
-    Exit(False);
-  if FSource[FCurrent] <> expect then
-    Exit(False);
+  FTokens := TObjectList<TToken>.Create(true); (* Owns tokens *)
+  FSource := src;
+  FStart := Low(src);
+  Fcurrent := Low(src);
+  FLine := 1;
+end;
 
-  Inc(FCurrent);
-  Result := True;
+destructor TScanner.Destroy;
+begin
+  inherited;
 end;
 
 function TScanner.ScanTokens: TObjectList<TToken>;

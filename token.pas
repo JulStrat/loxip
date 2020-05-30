@@ -36,7 +36,7 @@ type
     // Keywords.
     tkAND, tkOR, tkTRUE, tkFALSE,
     tkCLASS, tkSUPER, tkTHIS,
-    tkIF, tkELSE, tkFOR, tkWHILE,
+    tkIF, tkELSE, tkFOR, tkWHILE, tkBREAK,
     tkFUN, tkRETURN,
     tkVAR, tkNIL,
     tkPRINT, tkPRINTDOT,
@@ -113,6 +113,7 @@ initialization
   loxKeywords.Add('else', TTokenKind.tkELSE);
   loxKeywords.Add('for', TTokenKind.tkFOR);
   loxKeywords.Add('while', TTokenKind.tkWHILE);
+  loxKeywords.Add('break', TTokenKind.tkBREAK);
 
   loxKeywords.Add('fun', TTokenKind.tkFUN);
   loxKeywords.Add('return', TTokenKind.tkRETURN);

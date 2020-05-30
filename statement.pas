@@ -14,7 +14,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  expression, token;
+  environment, expression, token;
 
 type
   IStatementVisitor = interface;
@@ -30,11 +30,13 @@ type
   TBlockStatement = class(TStatement)
   private
     FBlock: TObjectList<TStatement>;
+    FEnvironment: TEnvironment;
   public
     constructor Create(block: TObjectList<TStatement>);
     destructor Destroy; override;
     procedure Accept(ev: IStatementVisitor); override;
     property block: TObjectList<TStatement> read FBlock;
+    property environment: TEnvironment read FEnvironment write FEnvironment;
   end;
 
   { TExpressionStatement }
@@ -127,10 +129,12 @@ implementation
 constructor TBlockStatement.Create(block: TObjectList<TStatement>);
 begin
   self.FBlock := block;
+  self.FEnvironment := TEnvironment.Create();
 end;
 
 destructor TBlockStatement.Destroy;
 begin
+  FreeAndNil(self.FEnvironment);
   FreeAndNil(self.FBlock);
   inherited Destroy;
 end;

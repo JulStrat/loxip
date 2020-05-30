@@ -9,7 +9,7 @@ var a8 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa8";
 
 var i = 0;
 
-var loopStart = clock();
+// var loopStart = clock();
 
 while (i < 100000) {
   i = i + 1;
@@ -103,11 +103,12 @@ while (i < 100000) {
   a6; a1; a6; a2; a6; a3; a6; a4; a6; a5; a6; a6; a6; a7; a6; a8;
   a7; a1; a7; a2; a7; a3; a7; a4; a7; a5; a7; a6; a7; a7; a7; a8;
   a8; a1; a8; a2; a8; a3; a8; a4; a8; a5; a8; a6; a8; a7; a8; a8;
+  // print i;
 }
 
-var loopTime = clock() - loopStart;
+// var loopTime = clock() - loopStart;
 
-var start = clock();
+// var start = clock();
 
 i = 0;
 while (i < 100000) {
@@ -210,10 +211,10 @@ while (i < 100000) {
 
 }
 
-var elapsed = clock() - start;
-print "loop";
-print loopTime;
-print "elapsed";
-print elapsed;
-print "equals";
-print elapsed - loopTime;
+// var elapsed = clock() - start;
+// print "loop";
+// print loopTime;
+// print "elapsed";
+// print elapsed;
+// print "equals";
+// print elapsed - loopTime;

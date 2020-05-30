@@ -25,6 +25,7 @@ type
     function IsTruthy(obj: TObject): boolean;
     function IsEqual(left, right: TObject): boolean;
     function Stringify(obj: TObject): string;
+
   public
     constructor Create;
     destructor Destroy; override;
@@ -46,9 +47,7 @@ type
     procedure VisitVarStm(stm: TVariableStatement);
     { helper }
     procedure Execute(stm: TStatement);
-    procedure EcecuteBlock(block: TObjectList<TStatement>; envir: TEnvironment);
     { do job }
-    { procedure Interpret(expr: TExpression); }
     procedure Interpret(stm: TObjectList<TStatement>);
   end;
 
@@ -176,6 +175,7 @@ begin
     raise rte;
 end;
 
+// TO DO CHECK OP with nil
 function TInterpreter.VisitBin(expr: TBinaryExpression): TObject;
 var
   left, right: TObject;
@@ -268,6 +268,7 @@ begin
   FreeAndNil(left);
   FreeAndNil(right);
   Result := obj;
+
   if rte <> nil then
     raise rte;
 end;
@@ -279,7 +280,7 @@ end;
 
 function TInterpreter.VisitVar(expr: TVariableExpression): TObject;
 begin
-  Result := self.FEnvir.Get(expr.varName);
+  Result := FEnvir.Get(expr.varName);
 end;
 
 function TInterpreter.VisitAssign(expr: TAssignmentExpression): TObject;
@@ -294,15 +295,21 @@ end;
 { Statements }
 procedure TInterpreter.VisitBlockStm(stm: TBlockStatement);
 var
-  envir: TEnvironment;
+  prev: TEnvironment;
+  s: TStatement;
 begin
-  envir := nil;
+  prev := self.FEnvir;
+
+  stm.environment.enclosing := prev;
+  self.FEnvir := stm.environment;
   try
-    envir := TEnvironment.Create(self.FEnvir);
-    self.EcecuteBlock(stm.block, envir);
+    for s in stm.block do
+      self.Execute(s);
+    //block.environment.Finalize;
   finally
-    FreeAndNil(envir);
+    self.FEnvir := prev;
   end;
+
 end;
 
 procedure TInterpreter.VisitExprStm(stm: TExpressionStatement);
@@ -315,12 +322,16 @@ begin
 end;
 
 procedure TInterpreter.VisitIfStm(stm: TIfStatement);
+var
+  cond: TObject;
 begin
-  if self.IsTruthy(self.Evaluate(stm.cond)) then
+  cond := self.Evaluate(stm.cond);
+  if self.IsTruthy(cond) then
     self.Execute(stm.thenStm)
   else
     if stm.elseStm <> nil then
       self.Execute(stm.elseStm);
+  FreeAndNil(cond);
 end;
 
 procedure TInterpreter.VisitWhileStm(stm: TWhileStatement);
@@ -393,41 +404,6 @@ begin
   {$ENDIF}
   stm.Accept(self);
 end;
-
-procedure TInterpreter.EcecuteBlock(block: TObjectList<TStatement>; envir: TEnvironment);
-var
-  prev: TEnvironment;
-  stm: TStatement;
-begin
-  prev := self.FEnvir;
-
-  try
-    self.FEnvir := envir;
-    for stm in block do
-      self.Execute(stm);
-  finally
-    self.FEnvir := prev;
-  end;
-end;
-
-{
-procedure TInterpreter.Interpret(expr: TExpression);
-var
-  obj: TObject;
-begin
-  try
-    try
-      obj := evaluate(expr);
-      WriteLn(Stringify(obj));
-    except
-      on e: ERunTimeError do
-        TLox.RunTimeError(e)
-    end;
-  finally
-    ;
-  end;
-end;
-}
 
 procedure TInterpreter.Interpret(stm: TObjectList<TStatement>);
 var
