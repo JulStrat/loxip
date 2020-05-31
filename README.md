@@ -9,6 +9,28 @@ Work in progress.
 Under FPC 3.0.4 download (clone) [Generics.Collections](https://github.com/maciej-izak/generics.collections).
 Optionally [FastMM4-AVX](https://github.com/maximmasiutin/FastMM4-AVX) memory manager.
 
+## Test
+
+[Fibonacci](https://en.wikipedia.org/wiki/Fibonacci_number) - 
+```
+$ ./loxip.exe
+Type quit to exit.
+> var a=0;var b=1;var c=0;while (c<1000) {if (c>=0) {print c+": "+a;} var temp=a;a=b;b=temp+b;c=c+1;}
+0: 0
+1: 1
+2: 1
+3: 2
+4: 3
+5: 5
+6: 8
+7: 13
+8: 21
+9: 34
+10: 55
+...
+
+```
+
 ## Challenges
 
 ### Chapter 5.Representing Code 

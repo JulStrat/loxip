@@ -12,6 +12,8 @@ unit environment;
 
 interface
 
+// TO DO Check black hole
+
 uses
   Classes, SysUtils, Generics.Collections
   , token;
@@ -23,7 +25,8 @@ type
   TEnvironment = class
   private
     FEnclosing: TEnvironment;
-    FValues: TObjectDictionary<string, TObject>;
+    //FValues: TObjectDictionary<string, TObject>;
+    FValues: TDictionary<string, Pointer>;
   public
     constructor Create; // overload;
     // constructor Create(encl: TEnvironment); overload;
@@ -49,7 +52,7 @@ constructor TEnvironment.Create;
 begin
   self.FEnclosing := nil;
   //FValues := TObjectDictionary<string, TObject>.Create([doOwnsValues]);
-  FValues := TObjectDictionary<string, TObject>.Create();
+  FValues := Generics.Collections.TDictionary<string, Pointer>.Create();
 end;
 
 {
@@ -70,7 +73,8 @@ end;
 
 function TEnvironment.Get(tok: TToken): TObject;
 var
-  val: TObject;
+  val: Pointer;
+  obj: TObject;
   {$IFDEF ENVIR_BENCH}
   delta: QWord;
   {$ENDIF}
@@ -80,12 +84,13 @@ begin
     {$IFDEF ENVIR_BENCH}
     delta := GetTickCount64();
     {$ENDIF}
-    if val is TLoxObject then
-      val := TLoxObject(val).Clone;
+    obj := TObject(val);
+    if obj is TLoxObject then
+       obj := TLoxObject(obj).Clone;
     {$IFDEF ENVIR_BENCH}
     Inc(getTicks, GetTickCount64() - delta);
     {$ENDIF}
-    Exit(val);
+    Exit(obj);
   end;
   if self.FEnclosing <> nil then
     Exit(self.FEnclosing.Get(tok));
@@ -94,7 +99,8 @@ end;
 
 procedure TEnvironment.Assign(tok: TToken; val: TObject);
 var
-  v: TObject;
+  v: Pointer;
+  //obj: TObject;
   {$IFDEF ENVIR_BENCH}
   delta: QWord;
   {$ENDIF}
@@ -106,7 +112,7 @@ begin
     {$ENDIF}
     if val is TLoxObject then
       val := TLoxObject(val).Clone;
-    FValues.Items[tok.lexeme] := val;
+    FValues.Items[tok.lexeme] := Pointer(val);
     {$IFDEF ENVIR_BENCH}
     Inc(assignTicks, GetTickCount64() - delta);
     {$ENDIF}
@@ -134,7 +140,7 @@ begin
   if val is TLoxObject then
     val := TLoxObject(val).Clone;
 
-  FValues.AddOrSetValue(vname, val);
+  FValues.AddOrSetValue(vname, Pointer(val));
   {$IFDEF ENVIR_BENCH}
   Inc(defineTicks, GetTickCount64() - delta);
   {$ENDIF}

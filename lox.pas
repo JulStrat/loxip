@@ -50,7 +50,7 @@ begin
   { TEST }
   // source := 'var x = 101.1; var y = 1000001.1; var z; z = x * x * x * x * x * x * x * x; // print z;';
   // WHILE statement test Fib
-  // source := 'var a=0;var b=1;var c=0; while (c<1000) {if (c>=0) {print c+": "+a;} var temp=a;a=b;b=temp+b;c=c+1;}';
+  // source := 'var a=0;var b=1;var c=0;while (c<1000) {if (c>=0) {print c+": "+a;} var temp=a;a=b;b=temp+b;c=c+1;}';
   // source := 'var st=clock();var a=0;var b=1;var c=0; while (c<100) {if (c>=5) {print a;} var temp=a;a=b;b=temp+b;c=c+1;} print clock()-st;';
   // FOR statement test
   // source := 'for (var i=0; i<=100; i=i+1) { if (i>=0) print i+": "+i*i; }';
