@@ -5,8 +5,12 @@ program loxip;
 {$endif}
 
 {$apptype console}
+{$define USE_FastMM4}
 
 uses
+  {$ifdef USE_FastMM4}
+  FastMM4,
+  {$endif}
   Classes, SysUtils,
   lox;
 

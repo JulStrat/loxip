@@ -4,6 +4,11 @@
 
 Work in progress.
 
+## Build
+
+Under FPC 3.0.4 download (clone) [Generics.Collections](https://github.com/maciej-izak/generics.collections).
+Optionally [FastMM4-AVX](https://github.com/maximmasiutin/FastMM4-AVX) memory manager.
+
 ## Challenges
 
 ### Chapter 5.Representing Code 
