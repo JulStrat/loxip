@@ -22,7 +22,7 @@ type
   private
     FEnvir: TEnvironment;
     function Evaluate(expr: TExpression): TObject;
-    function IsTruthy(obj: TObject): boolean;
+    function IsTruthy(obj: TObject): boolean; inline;
     function IsEqual(left, right: TObject): boolean;
     function Stringify(obj: TObject): string;
 
@@ -62,6 +62,7 @@ begin
   {$IFDEF TRACE}
   WriteLn(Format('[DEBUG] (TInterpreter) Evaluating %s.', [expr.ClassName]));
   {$ENDIF}
+  Result := nil;
   Result := expr.Accept(self);
 end;
 
@@ -115,7 +116,7 @@ end;
 
 destructor TInterpreter.Destroy;
 begin
-  FreeAndNil(self.FEnvir);
+  FreeObj(self.FEnvir);
   inherited;
 end;
 
@@ -131,7 +132,7 @@ function TInterpreter.VisitLogic(expr: TLogicalExpression): TObject;
 var
   left: TObject;
 begin
-  left := nil;
+  //left := nil;
   left := self.Evaluate(expr.left);
 
   case expr.op.tokenKind of
@@ -143,7 +144,7 @@ begin
         Exit(left);
   end;
 
-  FreeAndNil(left);
+  FreeObj(left);
   Result := self.Evaluate(expr.right);
 end;
 
@@ -153,14 +154,14 @@ var
   obj: TObject;
   rte: ERunTimeError;
 begin
-  right := nil;
+  //right := nil;
   obj := nil;
   rte := nil;
   right := self.Evaluate(expr.right);
 
   case expr.op.tokenKind of
     TTokenKind.tkBANG:
-      obj := TLoxBool.Create(not self.IsTruthy(right));
+      obj := LoxBool(not self.IsTruthy(right));
 
     TTokenKind.tkMINUS:
       if right is TLoxNum then
@@ -169,7 +170,7 @@ begin
         rte := ERuntimeError.Create(expr.op, 'Operand must be a number.');
   end;
 
-  FreeAndNil(right);
+  FreeObj(right);
   Result := obj;
   if rte <> nil then
     raise rte;
@@ -182,8 +183,8 @@ var
   obj: TObject;
   rte: ERunTimeError;
 begin
-  left := nil;
-  right := nil;
+  //left := nil;
+  //right := nil;
   obj := nil;
   rte := nil;
 
@@ -224,49 +225,49 @@ begin
 
     TTokenKind.tkGREATER: { > }
       if (left is TLoxNum) and (right is TLoxNum) then
-        obj := TLoxBool.Create(TLoxNum(left).Value > TLoxNum(right).Value)
+        obj := LoxBool(TLoxNum(left).Value > TLoxNum(right).Value)
       else
       if (left is TLoxStr) and (right is TLoxStr) then
-        obj := TLoxBool.Create(TLoxStr(left).Value > TLoxStr(right).Value)
+        obj := LoxBool(TLoxStr(left).Value > TLoxStr(right).Value)
       else
         rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
     { TO DO Add bool comparison Rewrite comp proc }
     TTokenKind.tkGREATER_EQUAL: { >= }
       if (left is TLoxNum) and (right is TLoxNum) then
-        obj := TLoxBool.Create(TLoxNum(left).Value >= TLoxNum(right).Value)
+        obj := LoxBool(TLoxNum(left).Value >= TLoxNum(right).Value)
       else
       if (left is TLoxStr) and (right is TLoxStr) then
-        obj := TLoxBool.Create(TLoxStr(left).Value >= TLoxStr(right).Value)
+        obj := LoxBool(TLoxStr(left).Value >= TLoxStr(right).Value)
       else
         rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkLESS: { < }
       if (left is TLoxNum) and (right is TLoxNum) then
-        obj := TLoxBool.Create(TLoxNum(left).Value < TLoxNum(right).Value)
+        obj := LoxBool(TLoxNum(left).Value < TLoxNum(right).Value)
       else
       if (left is TLoxStr) and (right is TLoxStr) then
-        obj := TLoxBool.Create(TLoxStr(left).Value < TLoxStr(right).Value)
+        obj := LoxBool(TLoxStr(left).Value < TLoxStr(right).Value)
       else
         rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkLESS_EQUAL: { <= }
       if (left is TLoxNum) and (right is TLoxNum) then
-        obj := TLoxBool.Create(TLoxNum(left).Value <= TLoxNum(right).Value)
+        obj := LoxBool(TLoxNum(left).Value <= TLoxNum(right).Value)
       else
       if (left is TLoxStr) and (right is TLoxStr) then
-        obj := TLoxBool.Create(TLoxStr(left).Value <= TLoxStr(right).Value)
+        obj := LoxBool(TLoxStr(left).Value <= TLoxStr(right).Value)
       else
         rte := ERuntimeError.Create(expr.op, 'Operands must be numbers or strings.');
 
     TTokenKind.tkEQUAL_EQUAL: { == }
-      obj := TLoxBool.Create(self.IsEqual(left, right));
+      obj := LoxBool(self.IsEqual(left, right));
 
     TTokenKind.tkBANG_EQUAL:  { != }
-      obj := TLoxBool.Create(not self.IsEqual(left, right));
+      obj := LoxBool(not self.IsEqual(left, right));
 
   end;
-  FreeAndNil(left);
-  FreeAndNil(right);
+  FreeObj(left);
+  FreeObj(right);
   Result := obj;
 
   if rte <> nil then
@@ -316,9 +317,9 @@ procedure TInterpreter.VisitExprStm(stm: TExpressionStatement);
 var
   r: TObject;
 begin
-  r := nil;
+  //r := nil;
   r := self.Evaluate(stm.expr);
-  FreeAndNil(r);
+  FreeObj(r);
 end;
 
 procedure TInterpreter.VisitIfStm(stm: TIfStatement);
@@ -331,7 +332,7 @@ begin
   else
     if stm.elseStm <> nil then
       self.Execute(stm.elseStm);
-  FreeAndNil(cond);
+  FreeObj(cond);
 end;
 
 procedure TInterpreter.VisitWhileStm(stm: TWhileStatement);
@@ -342,10 +343,10 @@ begin
   while self.IsTruthy(obj) do
   begin
     self.Execute(stm.body);
-    FreeAndNil(obj);
+    FreeObj(obj);
     obj := self.Evaluate(stm.cond);
   end;
-  FreeAndNil(obj)
+  FreeObj(obj)
 end;
 
 procedure TInterpreter.VisitPrintStm(stm: TPrintStatement);
@@ -353,7 +354,7 @@ var
   obj: TObject;
   prn: TASTPrinter;
 begin
-  obj := nil;
+  //obj := nil;
   prn := nil;
   try
   {$IFDEF DEBUG}
@@ -364,8 +365,8 @@ begin
     obj := self.Evaluate(stm.expr);
     WriteLn(ObjToStr(obj));
   finally
-    FreeAndNil(obj);
-    FreeAndNil(prn);
+    FreeObj(obj);
+    FreeObj(prn);
   end;
 end;
 
@@ -381,8 +382,8 @@ begin
     dot := dm.Make(stm.expr);
     WriteLn(dot.Text);
   finally
-    FreeAndNil(dot);
-    FreeAndNil(dm);
+    FreeObj(dot);
+    FreeObj(dm);
   end;
 end;
 
@@ -390,11 +391,11 @@ procedure TInterpreter.VisitVarStm(stm: TVariableStatement);
 var
   obj: TObject;
 begin
-  obj := nil;
+  //obj := nil;
   if stm.expr <> nil then
     obj := self.Evaluate(stm.expr);
   self.FEnvir.Define(stm.token.lexeme, obj);
-  FreeAndNil(obj);
+  FreeObj(obj);
 end;
 
 procedure TInterpreter.Execute(stm: TStatement);

@@ -124,6 +124,8 @@ type
 
 implementation
 
+uses ptypes;
+
 { TBlockStatement }
 
 constructor TBlockStatement.Create(block: TObjectList<TStatement>);
@@ -134,8 +136,8 @@ end;
 
 destructor TBlockStatement.Destroy;
 begin
-  FreeAndNil(self.FEnvironment);
-  FreeAndNil(self.FBlock);
+  FreeObj(self.FEnvironment);
+  FreeObj(self.FBlock);
   inherited Destroy;
 end;
 
@@ -156,9 +158,9 @@ end;
 
 destructor TIfStatement.Destroy;
 begin
-  FreeAndNil(self.FCond);
-  FreeAndNil(self.FThenStm);
-  FreeAndNil(self.FElseStm);
+  FreeObj(self.FCond);
+  FreeObj(self.FThenStm);
+  FreeObj(self.FElseStm);
   inherited Destroy;
 end;
 
@@ -177,8 +179,8 @@ end;
 
 destructor TWhileStatement.Destroy;
 begin
-  FreeAndNil(self.FCond);
-  FreeAndNil(self.FBody);
+  FreeObj(self.FCond);
+  FreeObj(self.FBody);
   inherited Destroy;
 end;
 
@@ -196,7 +198,7 @@ end;
 
 destructor TExpressionStatement.Destroy;
 begin
-  FreeAndNil(self.FExpr);
+  FreeObj(self.FExpr);
   inherited Destroy;
 end;
 
@@ -214,7 +216,7 @@ end;
 
 destructor TPrintStatement.Destroy;
 begin
-  FreeAndNil(self.FExpr);
+  FreeObj(self.FExpr);
   inherited Destroy;
 end;
 
@@ -238,8 +240,8 @@ end;
 
 destructor TVariableStatement.Destroy;
 begin
-  //FreeAndNil(self.FToken);
-  FreeAndNil(self.FExpr);
+  //FreeObj(self.FToken);
+  FreeObj(self.FExpr);
   inherited Destroy;
 end;
 

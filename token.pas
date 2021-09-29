@@ -81,7 +81,7 @@ end;
 
 destructor TToken.Destroy;
 begin
-  FreeAndNil(self.FLiteral);
+  FreeObj(self.FLiteral);
   inherited Destroy;
 end;
 

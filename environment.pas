@@ -67,7 +67,7 @@ destructor TEnvironment.Destroy;
 var
   key: String;
 begin
-  FreeAndNil(self.FValues);
+  FreeObj(self.FValues);
   inherited Destroy;
 end;
 
@@ -164,7 +164,7 @@ initialization
   defineTicks := 0;
   {$ENDIF}
 finalization
-  FreeAndNil(blackHole);
+  FreeObj(blackHole);
   {$IFDEF ENVIR_BENCH}
   WriteLn('TEnvironment - getTicks: ', getTicks);
   WriteLn('TEnvironment - assignTicks: ', assignTicks);

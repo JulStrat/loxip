@@ -66,10 +66,12 @@ type
   end;
 
 function ObjToStr(obj: TObject): ansistring;
-{
+function LoxBool(v: boolean): TLoxBool;
+procedure FreeObj(obj: TObject);
+
 var
   TLoxTrue, TLoxFalse: TLoxBool;
-}
+
 implementation
 
 {$IFDEF CLONE_BENCH}
@@ -98,7 +100,8 @@ begin
   Inc(clonedNumber);
   delta := GetTickCount64();
   {$ENDIF}
-  Result := TLoxBool.Create(self.FValue);
+  Result := self;
+  { Result := TLoxBool.Create(self.FValue); }
   {$IFDEF CLONE_BENCH}
   Inc(clonedTicks, GetTickCount64() - delta);
   {$ENDIF}
@@ -201,23 +204,37 @@ begin
     Result := obj.ToString();
 end;
 
+function LoxBool(v: boolean): TLoxBool;
+begin
+  if v then
+    Result := TLoxTrue
+  else  
+    Result := TLoxFalse;  
+end;
+
+procedure FreeObj(obj: TObject);
+begin
+  if not (obj is TLoxBool) then
+    FreeAndNil(obj);
+end;
+
 initialization
   {$IFDEF CLONE_BENCH}
   clonedNumber := 0;
   clonedTicks := 0;
   {$ENDIF}
-{
+
   TLoxTrue := TLoxBool.Create(true);
   TLoxFalse := TLoxBool.Create(false);
-}
+
 finalization
   {$IFDEF CLONE_BENCH}
   WriteLn('TLoxObject - clonedNumber: ', clonedNumber);
   WriteLn('TLoxObject - clonedTicks: ', clonedTicks);
   {$ENDIF}
-{
-  FreeAndNil(TLoxTrue);
-  FreeAndNil(TLoxFalse);
-}
+
+  FreeObj(TLoxTrue);
+  FreeObj(TLoxFalse);
+
 end.
 

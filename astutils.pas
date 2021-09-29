@@ -145,7 +145,7 @@ begin
     s := Format('%s [unary]%s', [o.Value, expr.op.lexeme])
   else
     s := Format('(%s %s)', [expr.op.lexeme, o.Value]);
-  FreeAndNil(o);
+  FreeObj(o);
   Result := TLoxStr.Create(s);
 end;
 
@@ -160,8 +160,8 @@ begin
     s := Format('%s %s %s', [l.Value, r.Value, expr.op.lexeme])
   else
     s := Format('(%s %s %s)', [expr.op.lexeme, l.Value, r.Value]);
-  FreeAndNil(l);
-  FreeAndNil(r);
+  FreeObj(l);
+  FreeObj(r);
   Result := TLoxStr.Create(s);
 end;
 
@@ -180,7 +180,7 @@ begin
     s := Format('%s', [e.Value])
   else
     s := Format('(group %s)', [e.Value]);
-  FreeAndNil(e);
+  FreeObj(e);
   Result := TLoxStr.Create(s);
 end;
 
@@ -199,7 +199,7 @@ begin
     s := Format('%s %s assign', [expr.varName.lexeme, r.Value])
   else
     s := Format('(assign %s %s)', [expr.varName.lexeme, r.Value]);
-  FreeAndNil(r);
+  FreeObj(r);
   Result := TLoxStr.Create(s);
 end;
 
@@ -210,7 +210,7 @@ begin
   self.FRPN := rpn;
   o := TLoxStr(expr.Accept(self));
   Result := o.Value;
-  FreeAndNil(o);
+  FreeObj(o);
 end;
 
 end.

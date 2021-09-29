@@ -334,7 +334,7 @@ begin
   end;
 
   if cond = nil then
-    cond := TLiteralExpression.Create(TLoxBool.Create(true)); (* not in Tokens. Free ? *)
+    cond := TLiteralExpression.Create(LoxBool(true)); (* not in Tokens. Free ? *)
   body := TWhileStatement.Create(cond, body);
 
   if init <> nil then
@@ -564,10 +564,10 @@ begin
   expr := nil;
 
   if match([TTokenKind.tkFALSE]) then
-    Exit(TLiteralExpression.Create(TLoxBool.Create(False)));
+    Exit(TLiteralExpression.Create(LoxBool(False)));
 
   if match([TTokenKind.tkTRUE]) then
-    Exit(TLiteralExpression.Create(TLoxBool.Create(True)));
+    Exit(TLiteralExpression.Create(LoxBool(True)));
 
   if match([TTokenKind.tkNIL]) then
     Exit(TLiteralExpression.Create(nil));

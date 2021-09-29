@@ -34,9 +34,10 @@ type
 
 implementation
 
+
 uses Generics.Collections
   , {expression,} statement
-  , scanner, parser{, astutils};
+  , scanner, parser{, astutils}, ptypes;
 
 class procedure TLox.Run(Source: string);
 var
@@ -83,10 +84,10 @@ begin
 
   (* Destructors test *)
 
-  FreeAndNil(stm);
-  FreeAndNil(tokens);
-  FreeAndNil(scanner);
-  FreeAndNil(parser);
+  FreeObj(stm);
+  FreeObj(tokens);
+  FreeObj(scanner);
+  FreeObj(parser);
 end;
 
 class procedure TLox.RunPrompt;
