@@ -88,7 +88,8 @@ end;
 function TToken.ToString: string;
 begin
   { Original format }
-  Result := Format('%s %s %s', [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)).Substring(2),
+  Result := Format('%s %s %s',
+    [GetEnumName(TypeInfo(TTokenKind), Ord(self.FTokenKind)).Substring(2),
     self.FLexeme, ObjToStr(self.FLiteral)]);
 
   (* JSON

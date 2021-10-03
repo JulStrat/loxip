@@ -153,7 +153,9 @@ end;
 
 function TScanner.IsAlpha(c: char): boolean;
 begin
-  Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or (c = '_');
+  Result := ((c >= 'a') and (c <= 'z'))
+    or ((c >= 'A') and (c <= 'Z'))
+    or (c = '_');
 end;
 
 function TScanner.IsAlphaNumeric(c: char): boolean;
@@ -163,7 +165,6 @@ end;
 
 function TScanner.IsAtEnd: boolean;
 begin
-  //Result := FCurrent > FSource.Length;
   Result := FCurrent > High(FSource);
 end;
 

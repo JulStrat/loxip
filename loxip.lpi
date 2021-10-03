@@ -62,7 +62,7 @@
       <FormatVersion Value="2"/>
       <Modes Count="0"/>
     </RunParams>
-    <Units Count="13">
+    <Units Count="14">
       <Unit0>
         <Filename Value="loxip.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -116,6 +116,10 @@
         <Filename Value="statement.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
+      <Unit13>
+        <Filename Value="callable.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit13>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -129,6 +133,11 @@
       <OtherUnitFiles Value="..\generics.collections\src"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <SyntaxMode Value="Delphi"/>
+      </SyntaxOptions>
+    </Parsing>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">

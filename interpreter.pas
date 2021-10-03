@@ -55,6 +55,37 @@ implementation
 
 uses ptypes, lox, astutils;
 
+{
+type
+  ILoxCallable = interface;
+
+  TClock = class(ILoxCallable)
+    constructor Create;
+    destructor Destroy; override;
+    function Arity(): integer;
+    function Call(inter: TInterpreter; args: TObjectList<TObject>): TObject;
+  end;
+
+constructor TClock.Create;
+begin
+end;
+
+destructor TClock.Destroy;
+begin
+  inherited;
+end;
+
+function TClock.Arity(): integer;
+begin
+  Result := 0;
+end;
+
+function TClock.Call(inter: TInterpreter; args: TObjectList<TObject>): TObject;
+begin
+  Result := TLoxNum.Create(17);
+end;
+}
+
 { TInterpreter }
 
 function TInterpreter.Evaluate(expr: TExpression): TObject;
@@ -417,5 +448,9 @@ begin
       TLox.RunTimeError(e)
   end;
 end;
+
+initialization
+
+finalization
 
 end.

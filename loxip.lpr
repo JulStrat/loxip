@@ -5,7 +5,7 @@ program loxip;
 {$endif}
 
 {$apptype console}
-{$define USE_FastMM4}
+{$undef USE_FastMM4}
 
 uses
   {$ifdef USE_FastMM4}
